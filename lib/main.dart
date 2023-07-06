@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -12,10 +12,12 @@ enum TimeRange {
 }
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -65,32 +67,32 @@ class _MyHomePageState extends State<MyHomePage> {
     borderRadius: BorderRadius.circular(4.0), color: const Color(0xFF4285F4),
   ),) : FilterData(false, 0),
   Container( height: 24, width: 24, decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(4.0),color:  Color(0xFF38C25D),
+    borderRadius: BorderRadius.circular(4.0),color:  const Color(0xFF38C25D),
   ),) : FilterData(false, 1),
   Container( height: 24, width: 24, decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(4.0),color:  Color(0xFFFFCA31),
+    borderRadius: BorderRadius.circular(4.0),color:  const Color(0xFFFFCA31),
   ),) : FilterData(false, 2),
     Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: Color(0xFFEA4335),
+      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFFEA4335),
     ),) : FilterData(false, 3),
     Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: Color(0xFFAD2C72),
+      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFFAD2C72),
     ),) : FilterData(false, 4),
     Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: Color(0xFF858B99),
+      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFF858B99),
     ),) : FilterData(false, 5),
     Container(decoration: BoxDecoration(
   borderRadius: BorderRadius.circular(4.0),
-  ), height: 24, width: 24,child: Text('C1') ,):FilterData(false,6),
+  ), height: 24, width: 24,child: const Text('C1') ,):FilterData(false,6),
     Container(height: 24, width: 24, decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(4.0),
-    ),child: Text('C2'),):FilterData(false,7),
+    ),child: const Text('C2'),):FilterData(false,7),
     Container(height: 24, width: 24, decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(4.0),
-    ),child: Text('C3'),):FilterData(false,8),
+    ),child: const Text('C3'),):FilterData(false,8),
     Container(height: 24, width: 24, decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(4.0),
-    ),child: Text('C4'),):FilterData(false,9),
+    ),child: const Text('C4'),):FilterData(false,9),
   };
   ColorChangingCircle colorChangingCircle =
       const ColorChangingCircle(dataIndex: 0, colors: [
@@ -115,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       String jsonString ;
-
+log('execute json with time filter $selectedTimeRange and page $selectedPage');
 if(selectedPage==1) {
   jsonString = await rootBundle.loadString('assets/1.txt');
 } else {
@@ -195,10 +197,10 @@ if(selectedPage==1) {
           }
         });
       } else {
-        print('не нашли файл(((');
+        log('не нашли файл(((${DateTime.now()}');
       }
     } catch (e) {
-      print('Ошибка при чтении и парсинге файла JSON: $e');
+      log('Ошибка при чтении и парсинге файла JSON: $e');
     }
   }
 
@@ -213,14 +215,14 @@ if(selectedPage==1) {
       case 9:
         return 'C4';
       default:
-        print('вышли за пределы индексации');
+        log('вышли за пределы индексации');
         return '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    GlobalKey _popupMenuKey = GlobalKey();
+    GlobalKey popupMenuKey = GlobalKey();
 
 
     return Scaffold(
@@ -239,6 +241,7 @@ if(selectedPage==1) {
                           setState(() {
                             selectedTimeRange = TimeRange.Hour;
                             selectedPage = 1;
+                            _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
                           });
                         },
@@ -266,6 +269,7 @@ if(selectedPage==1) {
                           setState(() {
                             selectedPage = 1;
                             selectedTimeRange = TimeRange.Today;
+                            _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
                           });
                         },
@@ -293,6 +297,7 @@ if(selectedPage==1) {
                           setState(() {
                             selectedPage = 1;
                             selectedTimeRange = TimeRange.Yesterday;
+                            _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
                           });
                         },
@@ -321,7 +326,7 @@ if(selectedPage==1) {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(0.0),
+              padding: const EdgeInsets.all(0.0),
               child: Row(
                 children: [
                   const SizedBox(
@@ -386,7 +391,7 @@ if(selectedPage==1) {
                     ),
                     child: PopupMenuButton<String>(
                       //окно фильтрации
-                      key: _popupMenuKey,
+                      key: popupMenuKey,
                       icon: const Icon(
                         Icons.filter_alt,
                         color: Color(0xFF93959A),
@@ -410,7 +415,7 @@ if(selectedPage==1) {
                                               filterData.booleanValue = value;
                                             });
                                           });
-                                          _popupMenuKey.currentState?.setState(() {});
+                                          popupMenuKey.currentState?.setState(() {});
                                       },
                                     ),
                                     Container(
@@ -645,19 +650,19 @@ if(selectedPage==1) {
                  },
                  child: Row(
                    children: [
-                     Container(
+                     SizedBox(
                        width: 24,
                        height: 24,
                        child: entry.key,
                      ),
-                     SizedBox(width: 4),
+                     const SizedBox(width: 4),
                      SizedBox(
                        width: 24,
                        height: 24,
                        child: IconButton(
                          padding: EdgeInsets.zero,
                          iconSize: 24,
-                         icon: Icon(Icons.close),
+                         icon: const Icon(Icons.close),
                          onPressed: () {
                            setState(() {
                              entry.value.booleanValue = false;
@@ -675,8 +680,10 @@ if(selectedPage==1) {
 
 
             const SizedBox(height: 20,),
-            Expanded(
-              child: ListView.builder(
+              Expanded(
+              child: GestureDetector(
+                onHorizontalDragUpdate: _handleSwipe, // Обработка свайпа
+                child:ListView.builder(
                 itemExtent: 132,
                 itemCount: information.length,
                 itemBuilder: (context, index) {
@@ -691,7 +698,7 @@ if(selectedPage==1) {
 
                   if (searchQuery.isNotEmpty &&
                       !(nameContainsQuery || targetNameContainsQuery)) {
-                    return SizedBox.shrink(); // прячем карточку
+                    return const SizedBox.shrink(); // прячем карточку
                   }
 
                   return Card(
@@ -844,10 +851,11 @@ if(selectedPage==1) {
                 },
               ),
             ),
+    ),
       Align(
         alignment: Alignment.bottomCenter,
         child:
-            Container(
+            SizedBox(
               height: 50,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -860,7 +868,7 @@ if(selectedPage==1) {
                       _readAndParseJsonFile();
                       _controller.text = selectedPage.toString();
                     },
-                    icon: Icon(Icons.keyboard_double_arrow_left),
+                    icon: const Icon(Icons.keyboard_double_arrow_left),
                   ),
                   IconButton(
                     onPressed: () {
@@ -872,7 +880,7 @@ if(selectedPage==1) {
                       _readAndParseJsonFile();
                       _controller.text = selectedPage.toString();
                     },
-                    icon: Icon(Icons.chevron_left),
+                    icon: const Icon(Icons.chevron_left),
                   ),
                   const Text('Страница:',
                   style: TextStyle(
@@ -881,7 +889,7 @@ if(selectedPage==1) {
                     fontWeight: FontWeight.w500,
                   ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 40,
                     child: TextField(
                       controller: _controller,
@@ -980,13 +988,37 @@ if(selectedPage==1) {
     });
     _readAndParseJsonFile();
   }
+  void _handleSwipe(DragUpdateDetails details) {
+    // Определение направления свайпа и изменение страницы в зависимости от направления
+    if (details.primaryDelta != null) {
+      if (details.primaryDelta! > 0) {
+        // Свайп вправо
+        setState(() {
+          if (selectedPage != 1) {
+            selectedPage--;
+            _controller.text = selectedPage.toString();
+          }
+        });
+        _readAndParseJsonFile();
+      } else if (details.primaryDelta! < 0) {
+        // Свайп влево
+        setState(() {
+          if (selectedPage != countOfPages) {
+            selectedPage++;
+            _controller.text = selectedPage.toString();
+          }
+        });
+        _readAndParseJsonFile();
+      }
+    }
+  }
 }
 
 class ColorChangingCircle extends StatelessWidget {
   final int dataIndex;
   final List<Color> colors;
 
-  const ColorChangingCircle({
+  const ColorChangingCircle({super.key,
     required this.dataIndex,
     required this.colors,
   });
@@ -1060,7 +1092,7 @@ class CardName {
       case 7:
         return 'Резерв';
       default:
-        print('вышли из допустимых индексов');
+        log('вышли из допустимых индексов');
         return '';
     }
   }
@@ -1102,13 +1134,10 @@ class FilterData{
   FilterData(this.booleanValue, this.intValue);
 }
 
-//todo постранично показывать по 5 карточек + навигация по страницам
 // todo стили
 // todo дополнить карточку расширенной инфой
 // todo разобраться со временем now()
 // todo дублирование элементов при фильтрации
-// todo смена страницы по свайпу + при переходе по фильтрам времени, переходить на первую страницу
-// todo подсвет поля красным если неправильная страница
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
