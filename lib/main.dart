@@ -50,11 +50,48 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late TextEditingController _controller;
   Timer? searchTimer; // Переменная для хранения таймера
   String searchQuery = '';
   List information = [];
+  String firstPage = 'assets/2.txt';
+  String secondPage = 'assets/1.txt';
+  int selectedPage = 1;
+  bool _isValid = true;
+  int countOfPages = 2; //типа пришло от сервера
   TimeRange selectedTimeRange = TimeRange.Hour;
-  List<bool?> checkBoxValues = [];
+  Map<Container, FilterData> filter = {
+  Container( height: 24, width: 24, decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(4.0), color: const Color(0xFF4285F4),
+  ),) : FilterData(false, 0),
+  Container( height: 24, width: 24, decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(4.0),color:  Color(0xFF38C25D),
+  ),) : FilterData(false, 1),
+  Container( height: 24, width: 24, decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(4.0),color:  Color(0xFFFFCA31),
+  ),) : FilterData(false, 2),
+    Container( height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),color: Color(0xFFEA4335),
+    ),) : FilterData(false, 3),
+    Container( height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),color: Color(0xFFAD2C72),
+    ),) : FilterData(false, 4),
+    Container( height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),color: Color(0xFF858B99),
+    ),) : FilterData(false, 5),
+    Container(decoration: BoxDecoration(
+  borderRadius: BorderRadius.circular(4.0),
+  ), height: 24, width: 24,child: Text('C1') ,):FilterData(false,6),
+    Container(height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),
+    ),child: Text('C2'),):FilterData(false,7),
+    Container(height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),
+    ),child: Text('C3'),):FilterData(false,8),
+    Container(height: 24, width: 24, decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(4.0),
+    ),child: Text('C4'),):FilterData(false,9),
+  };
   ColorChangingCircle colorChangingCircle =
       const ColorChangingCircle(dataIndex: 0, colors: [
     Color(0xFF4285F4),
@@ -71,12 +108,21 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _readAndParseJsonFile();
-    checkBoxValues = List.generate(10, (index) => false);
+    _controller = TextEditingController(text:selectedPage.toString());
   }
 
   Future<void> _readAndParseJsonFile() async {
+
     try {
-      String jsonString = await rootBundle.loadString('assets/jsonConsole.txt');
+      String jsonString ;
+
+if(selectedPage==1) {
+  jsonString = await rootBundle.loadString('assets/1.txt');
+} else {
+  jsonString = await rootBundle.loadString('assets/2.txt');
+}
+
+
       if (jsonString.isNotEmpty) {
         List allInformation = json.decode(jsonString)['data']['alerts'];
         List filteredInformation = [];
@@ -118,9 +164,11 @@ class _MyHomePageState extends State<MyHomePage> {
               .toList();
         }
         if (filteredInformation.isNotEmpty) {
-          for (int i = 0; i < checkBoxValues.length; i++) {
+          for (int i = 0; i < filter.length; i++) {
             //фильтр информации
-            if (checkBoxValues[i] == true) {
+            if (filter.values
+                .firstWhere((filterData) => filterData.intValue == i)
+                .booleanValue == true) {
               counter++;
               if (i < 6) {
                 colorFilter += filteredInformation
@@ -172,6 +220,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    GlobalKey _popupMenuKey = GlobalKey();
+
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -187,6 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           setState(() {
                             selectedTimeRange = TimeRange.Hour;
+                            selectedPage = 1;
                             _readAndParseJsonFile();
                           });
                         },
@@ -212,6 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: ElevatedButton(
                         onPressed: () {
                           setState(() {
+                            selectedPage = 1;
                             selectedTimeRange = TimeRange.Today;
                             _readAndParseJsonFile();
                           });
@@ -238,6 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: ElevatedButton(
                         onPressed: () {
                           setState(() {
+                            selectedPage = 1;
                             selectedTimeRange = TimeRange.Yesterday;
                             _readAndParseJsonFile();
                           });
@@ -332,6 +386,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     child: PopupMenuButton<String>(
                       //окно фильтрации
+                      key: _popupMenuKey,
                       icon: const Icon(
                         Icons.filter_alt,
                         color: Color(0xFF93959A),
@@ -345,15 +400,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: checkBoxValues[0] ?? false,
+                                      value: filter.values.firstWhere((filterData) => filterData.intValue == 0).booleanValue,
                                       onChanged: (bool? value) {
-                                        SchedulerBinding.instance
-                                            .addPostFrameCallback((_) {
                                           setState(() {
                                             // Обновление состояния Checkbox
-                                            checkBoxValues[0] = value ?? false;
+                                            filter.values
+                                                .where((filterData) => filterData.intValue == 0)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
+                                          _popupMenuKey.currentState?.setState(() {});
                                       },
                                     ),
                                     Container(
@@ -365,10 +422,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[1] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 1)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[1] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 1)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -381,10 +444,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[2] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 2)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[2] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 2)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -398,10 +467,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: checkBoxValues[3] ?? false,
+                                      value:filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 3)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[3] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 3)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -414,10 +489,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[4] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 4)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[4] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 4)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -430,10 +511,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[5] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 5)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[5] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 5)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -447,10 +534,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: checkBoxValues[6] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 6)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[6] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 6)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -459,10 +552,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[7] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 7)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[7] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 7)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -472,10 +571,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: checkBoxValues[8] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 8)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[8] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 8)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -484,10 +589,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       width: 10,
                                     ),
                                     Checkbox(
-                                      value: checkBoxValues[9] ?? false,
+                                      value: filter.values
+                                          .firstWhere((filterData) => filterData.intValue == 9)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
-                                          checkBoxValues[9] = value ?? false;
+                                          filter.values
+                                              .where((filterData) => filterData.intValue == 9)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
                                         });
                                       },
                                     ),
@@ -518,6 +629,49 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 8,),
+             Row(children: filter.entries
+                 .where((entry) => entry.value.booleanValue == true)
+                 .map((entry) => Material(
+               elevation: 4.0,
+               shape: RoundedRectangleBorder(
+                 borderRadius: BorderRadius.circular(4.0),
+               ),
+               child: InkWell(
+                 onTap: () {
+                   setState(() {
+                     entry.value.booleanValue = false;
+                     _readAndParseJsonFile();
+                   });
+                 },
+                 child: Row(
+                   children: [
+                     Container(
+                       width: 24,
+                       height: 24,
+                       child: entry.key,
+                     ),
+                     SizedBox(width: 4),
+                     SizedBox(
+                       width: 24,
+                       height: 24,
+                       child: IconButton(
+                         padding: EdgeInsets.zero,
+                         iconSize: 24,
+                         icon: Icon(Icons.close),
+                         onPressed: () {
+                           setState(() {
+                             entry.value.booleanValue = false;
+                             _readAndParseJsonFile();
+                           });
+                         },
+                       ),
+                     ),
+                   ],
+                 ),
+               ),
+             ))
+                 .toList(),
+            ),
 
 
             const SizedBox(height: 20,),
@@ -690,10 +844,141 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
+      Align(
+        alignment: Alignment.bottomCenter,
+        child:
+            Container(
+              height: 50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedPage = 1;
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: Icon(Icons.keyboard_double_arrow_left),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        if(selectedPage!=1) {
+                          selectedPage -= 1;
+                        }//todo о одному, болван
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: Icon(Icons.chevron_left),
+                  ),
+                  const Text('Страница:',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w500,
+                  ),
+                  ),
+                  Container(
+                    width: 40,
+                    child: TextField(
+                      controller: _controller,
+                      onChanged: _validateInput,
+                      onSubmitted: _onSubmitted, // Обработка события "Готово"
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        focusedErrorBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: _isValid ? const BorderSide(color: Colors.grey) : const BorderSide(color: Colors.red),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: _isValid ? const BorderSide(color: Colors.blue) : const BorderSide(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const Text('из',
+                    style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w500,
+                  ),),
+                  Text(countOfPages.toString(),style: const TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w500,
+                  ),), // Просто пример, заменить на ответ сервера о количестве страниц
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        if(selectedPage!=countOfPages){
+                          selectedPage+=1;
+                        }
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                     setState(() {
+                       selectedPage=countOfPages;
+                     });
+                     _readAndParseJsonFile();
+                     _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.keyboard_double_arrow_right),
+                  ),
+                ],
+              ),
+            ),
+      ),
           ],
         ),
       ),
     );
+  }
+  void _validateInput(String value) {
+    setState(() {
+      // Проверьте условие на основе вашего диапазона значений
+      if (value.isNotEmpty && int.tryParse(value) != null && int.parse(value) > 0 && int.parse(value) <= countOfPages) {
+        _isValid = true;
+      } else {
+        _isValid = false;
+      }
+    });
+  }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  void _onSubmitted(String value) {
+    // Обработка значения, когда пользователь нажимает клавишу "Готово" на клавиатуре
+    // Можно выполнить дополнительную обработку или переход на другую страницу
+    setState(() {
+      // Проверьте условие на основе вашего диапазона значений
+      if (value.isNotEmpty &&
+          int.tryParse(value) != null &&
+          int.parse(value) >= 0 &&
+          int.parse(value) <= countOfPages) {
+        selectedPage = int.parse(value);
+      } else {
+        _controller.text = selectedPage.toString(); // Восстановление предыдущего значения
+      }
+    });
+    _readAndParseJsonFile();
   }
 }
 
@@ -810,10 +1095,20 @@ class CardName {
     }
   }
 }
+class FilterData{
+  bool? booleanValue;
+  int intValue;
+
+  FilterData(this.booleanValue, this.intValue);
+}
 
 //todo постранично показывать по 5 карточек + навигация по страницам
 // todo стили
-// todo дополнить карточку инфой
+// todo дополнить карточку расширенной инфой
+// todo разобраться со временем now()
+// todo дублирование элементов при фильтрации
+// todo смена страницы по свайпу + при переходе по фильтрам времени, переходить на первую страницу
+// todo подсвет поля красным если неправильная страница
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
