@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_dialogs/flutter_dialogs.dart';
 
 enum TimeRange {
   Hour,
@@ -724,99 +725,106 @@ if(selectedPage==1) {
                         ),
                       ),
                       child: ListTile(
-                        subtitle:
-                            Column(
-                              children: [
-                                SizedBox(height: 6,),
+                        subtitle: Column(
+                          children: [
+                            SizedBox(height: 6,),
                             Row(
                               children: [
                                 const Column(
                                   children: [SizedBox(width: 16,)],
                                 ),
-                                Column(
-                                  children: [
-                                    Container(height: 16,width: 16,
-                                      decoration: BoxDecoration(
-                                        color: nowColor,
-                                        borderRadius: BorderRadius.circular(8), // половина диаметра (16 / 2 = 8)
-                                      ),),
-                                    Container(width: 1,
-                                      child: Column(
-                                        children: [
+                                 Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Container(
+                                        height: 16,
+                                        width: 16,
+                                        decoration: BoxDecoration(
+                                          color: nowColor,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      ),
+                                      Container(
+                                        width: 1,
+                                        child: Column(
+                                          children: [
+                                            DashedLine(
+                                              color: nowColor,
+                                              height: 83,
+                                              dashWidth: 1.0,
+                                              dashSpace: 1.0,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
 
-                                          DashedLine(
-                                            color: nowColor,
-                                            height: 83,
-                                            dashWidth: 1.0,
-                                            dashSpace: 1.0,
-                                          ),
-
-                                        ],),
-                                    ),
-                                  ],
-                                ),
                                 const Column(children: [SizedBox(width: 8,)],),
-                                Expanded(child:
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(CardName().settingNameToCard(
-                                        information[index]['state']),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontFamily: 'Roboto',
-                                        fontSize: 17,
-                                        color: Color(0xFF515357),
-                                      ),),
-                                    const SizedBox(
-                                      height: 8,
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          CardName().settingNameToCard(information[index]['state']),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'Roboto',
+                                            fontSize: 17,
+                                            color: Color(0xFF515357),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8,),
+                                        Text(
+                                          information[index]['name'].toString(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontFamily: 'Roboto',
+                                            fontSize: 14,
+                                            color: Color(0xFF515357),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4,),
+                                        Text(
+                                          information[index]['target_name'].toString(),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontFamily: 'Roboto',
+                                            fontSize: 14,
+                                            color: Color(0xFF93959A),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12,),
+                                        Text(
+                                          CardName().getTimeText(
+                                            information[index]['time_value'],
+                                            selectedTimeRange,
+                                          ),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontFamily: 'Roboto',
+                                            fontSize: 14,
+                                            color: Color(0xFF515357),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      information[index]['name'].toString(),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Roboto',
-                                        fontSize: 14,
-                                        color: Color(0xFF515357),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
-                                    Text(
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        information[index]['target_name'].toString(),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'Roboto',
-                                          fontSize: 14,
-                                          color: Color(0xFF93959A),
-                                        )),
-                                    const SizedBox(
-                                      height: 12,
-                                    ),
-                                    Text(
-                                      CardName().getTimeText(
-                                        information[index]['time_value'],
-                                        selectedTimeRange,
-                                      ),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Roboto',
-                                        fontSize: 14,
-                                        color: Color(0xFF515357),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
                                 ),
                               ],
                             ),
-                              ],
-                            ),
+                          ],
+                        ),
+
+
                         onLongPress: () {
                           showDialog(
                             //карточка подробной информации
@@ -826,57 +834,75 @@ if(selectedPage==1) {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Text(
-                                              CardName().settingNameToCard(
-                                                  information[index]['state']),
-                                              style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontWeight: FontWeight.bold,
+                                child: Container(
+                                  width: double.infinity, // Установка ширины контейнера равной ширине экрана
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 6,),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(width: 16,),
+                                            Container(
+                                              height: 16,
+                                              width: 16,
+                                              decoration: BoxDecoration(
+                                                color: nowColor,
+                                                borderRadius: BorderRadius.circular(8),
                                               ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.close),
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      ListTile(
-                                        title: Text(information[index]['name']
-                                            .toString()),
-                                      ),
-                                      ListTile(
-                                        title: Text(
-                                          information[index]['target_name']
-                                              .toString(),
+                                            SizedBox(width: 8,),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    CardName().settingNameToCard(information[index]['state']),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontFamily: 'Roboto',
+                                                      fontSize: 17,
+                                                      color: Color(0xFF515357),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8,),
+                                                  Text(
+                                                    information[index]['name'].toString(),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontFamily: 'Roboto',
+                                                      fontSize: 14,
+                                                      color: Color(0xFF515357),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 4,),
+                                                  Text(
+                                                    information[index]['target_name'].toString(),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontFamily: 'Roboto',
+                                                      fontSize: 14,
+                                                      color: Color(0xFF93959A),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 12,),
+                                                  // остальные текстовые виджеты
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      ListTile(
-                                        title: Text(
-                                          CardName().getTimeText(
-                                            information[index]['time_value'],
-                                            selectedTimeRange,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
                             },
                           );
+
+
+
                         }, //onlongpress
                       ),
                     ),
@@ -1171,7 +1197,7 @@ class CardName {
           DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
               .toUtc();
       final String formattedDateTime =
-          DateFormat('hh:mm:ss dd.MM.yy ').format(eventTime);
+          DateFormat('HH:mm:ss dd.MM.yy ').format(eventTime);
       return formattedDateTime;
     } else {
       return timeValue;
@@ -1192,7 +1218,6 @@ class FilterData{
 // todo дублирование элементов при фильтрации
 // todo json config глобальный, доступ из всего кода
 // todo анимация свайпвов
-// todo отображение времени в 24 формат для вчера
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
