@@ -724,80 +724,99 @@ if(selectedPage==1) {
                         ),
                       ),
                       child: ListTile(
-                        leading: ColorChangingCircle(
-                          dataIndex: information[index]['state'],
-                          colors: const [
-                            Color(0xFF4285F4),
-                            Color(0xFF38C25D),
-                            Color(0xFFFFCA31),
-                            Color(0xFFEA4335),
-                            Color(0xFFAD2C72),
-                            Color(0xFF858B99),
-                            Color(0xFFD9E2EC),
-                            Color(0xFF4285F4),
-                          ],
-                        ),
-                        title: Row(
-                          children: [
-                            Text(
-                              CardName().settingNameToCard(
-                                  information[index]['state']),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'Roboto',
-                                fontSize: 17,
-                                color: Color(0xFF515357),
-                              ),
+                        subtitle:
+                            Column(
+                              children: [
+                                SizedBox(height: 6,),
+                            Row(
+                              children: [
+                                const Column(
+                                  children: [SizedBox(width: 16,)],
+                                ),
+                                Column(
+                                  children: [
+                                    Container(height: 16,width: 16,
+                                      decoration: BoxDecoration(
+                                        color: nowColor,
+                                        borderRadius: BorderRadius.circular(8), // половина диаметра (16 / 2 = 8)
+                                      ),),
+                                    Container(width: 1,
+                                      child: Column(
+                                        children: [
+
+                                          DashedLine(
+                                            color: nowColor,
+                                            height: 83,
+                                            dashWidth: 1.0,
+                                            dashSpace: 1.0,
+                                          ),
+
+                                        ],),
+                                    ),
+                                  ],
+                                ),
+                                const Column(children: [SizedBox(width: 8,)],),
+                                Expanded(child:
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(CardName().settingNameToCard(
+                                        information[index]['state']),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: 'Roboto',
+                                        fontSize: 17,
+                                        color: Color(0xFF515357),
+                                      ),),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
+                                    Text(
+                                      information[index]['name'].toString(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Roboto',
+                                        fontSize: 14,
+                                        color: Color(0xFF515357),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    Text(
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        information[index]['target_name'].toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Roboto',
+                                          fontSize: 14,
+                                          color: Color(0xFF93959A),
+                                        )),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                    Text(
+                                      CardName().getTimeText(
+                                        information[index]['time_value'],
+                                        selectedTimeRange,
+                                      ),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontFamily: 'Roboto',
+                                        fontSize: 14,
+                                        color: Color(0xFF515357),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(
-                              height: 8,
+                              ],
                             ),
-                            Text(
-                              information[index]['name'].toString(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontFamily: 'Roboto',
-                                fontSize: 14,
-                                color: Color(0xFF515357),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            Text(
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                information[index]['target_name'].toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: 'Roboto',
-                                  fontSize: 14,
-                                  color: Color(0xFF93959A),
-                                )),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Text(
-                              CardName().getTimeText(
-                                information[index]['time_value'],
-                                selectedTimeRange,
-                              ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontFamily: 'Roboto',
-                                fontSize: 14,
-                                color: Color(0xFF515357),
-                              ),
-                            ),
-                          ],
-                        ),
                         onLongPress: () {
                           showDialog(
                             //карточка подробной информации
@@ -1028,7 +1047,7 @@ if(selectedPage==1) {
   }
 }
 
-class ColorChangingCircle extends StatelessWidget {
+class ColorChangingCircle  {
   final int dataIndex;
   final List<Color> colors;
 
@@ -1036,54 +1055,7 @@ class ColorChangingCircle extends StatelessWidget {
     Key? key,
     required this.dataIndex,
     required this.colors,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final index = dataIndex;
-    final color = colors[index];
-
-    return SizedBox(
-      height: 100,
-      width: 30,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 7,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 16,
-            left: 14.5,
-            bottom: 0,
-            child: Container(
-              width: 1,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: DashedLine(
-                      color: color,
-                      height: 83,
-                      dashWidth: 1.0,
-                      dashSpace: 1.0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  }) ;
 }
 
 
@@ -1220,6 +1192,7 @@ class FilterData{
 // todo дублирование элементов при фильтрации
 // todo json config глобальный, доступ из всего кода
 // todo анимация свайпвов
+// todo отображение времени в 24 формат для вчера
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
