@@ -887,7 +887,84 @@ if(selectedPage==1) {
                                                     ),
                                                   ),
                                                   SizedBox(height: 12,),
-                                                  // остальные текстовые виджеты
+                                                  Text(
+                                                      "IP-адрес:${information[index]['ip']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                      "Шаблон сигнала: ${information[index]['alert_template']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                      "Сигнал: ${information[index]['subalert']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                      "Значение:${information[index]['value']+information[index]['units']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                      "Описание:${information[index]['description']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                      "Метка:${information[index]['label']}",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color: Color(0xFF93959A),
+                                                      )),
+                                                  const SizedBox(
+                                                    height: 12,
+                                                  ),
+                                                  Text(
+                                                    CardName().getTimeText(
+                                                      information[index]['time_value'],
+                                                      selectedTimeRange,
+                                                    ),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontFamily: 'Roboto',
+                                                      fontSize: 14,
+                                                      color: Color(0xFF515357),
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
