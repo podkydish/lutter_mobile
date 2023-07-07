@@ -61,6 +61,14 @@ class _MyHomePageState extends State<MyHomePage> {
   int selectedPage = 1;
   bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
+  List<Color> myColors = [Color(0xFF4285F4),
+    Color(0xFF38C25D),
+    Color(0xFFFFCA31),
+    Color(0xFFEA4335),
+    Color(0xFFAD2C72),
+    Color(0xFF858B99),
+    Color(0xFFD9E2EC),
+    Color(0xFF4285F4)];
   TimeRange selectedTimeRange = TimeRange.Hour;
   Map<Container, FilterData> filter = {
   Container( height: 24, width: 24, decoration: BoxDecoration(
@@ -95,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ),child: const Text('C4'),):FilterData(false,9),
   };
   ColorChangingCircle colorChangingCircle =
-      const ColorChangingCircle(dataIndex: 0, colors: [
+  ColorChangingCircle(dataIndex: 0, colors: [
     Color(0xFF4285F4),
     Color(0xFF38C25D),
     Color(0xFFFFCA31),
@@ -114,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _readAndParseJsonFile() async {
-
+log(DateTime.fromMillisecondsSinceEpoch(int.parse(DateTime.now().millisecondsSinceEpoch.toString().substring(0, 10))).toString());
     try {
       String jsonString ;
 log('execute json with time filter $selectedTimeRange and page $selectedPage');
@@ -700,14 +708,20 @@ if(selectedPage==1) {
                       !(nameContainsQuery || targetNameContainsQuery)) {
                     return const SizedBox.shrink(); // прячем карточку
                   }
-
+                  final int stateIndex = information[index]['state'];
+                  final Color nowColor = colorChangingCircle.colors[stateIndex];
                   return Card(
                     elevation: 0,
                     margin: const EdgeInsets.all(0),
                     child: Container(
-                      decoration: const BoxDecoration(
+                      decoration:  BoxDecoration(
                         border: Border(
-                            bottom: BorderSide(color: Color(0xFFE3E3E3))),
+                            bottom: BorderSide(color: Color(0xFFE3E3E3)),
+                          left: BorderSide(
+                          color: nowColor,
+                          width: 4,
+                        ),
+                        ),
                       ),
                       child: ListTile(
                         leading: ColorChangingCircle(
@@ -875,7 +889,7 @@ if(selectedPage==1) {
                       setState(() {
                         if(selectedPage!=1) {
                           selectedPage -= 1;
-                        }//todo о одному, болван
+                        }
                       });
                       _readAndParseJsonFile();
                       _controller.text = selectedPage.toString();
@@ -1018,10 +1032,11 @@ class ColorChangingCircle extends StatelessWidget {
   final int dataIndex;
   final List<Color> colors;
 
-  const ColorChangingCircle({super.key,
+  const ColorChangingCircle({
+    Key? key,
     required this.dataIndex,
     required this.colors,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1045,20 +1060,26 @@ class ColorChangingCircle extends StatelessWidget {
               ),
             ),
           ),
-         /* Positioned(
+          Positioned(
             top: 16,
             left: 14.5,
             bottom: 0,
-            child: Column(
-              children: [
-                Container(
-                  width: 1,
-                  height: 83,
-                  color: color,
-                ),
-              ],
+            child: Container(
+              width: 1,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: DashedLine(
+                      color: color,
+                      height: 83,
+                      dashWidth: 1.0,
+                      dashSpace: 1.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),*/
+          ),
         ],
       ),
     );
@@ -1066,6 +1087,64 @@ class ColorChangingCircle extends StatelessWidget {
 }
 
 
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  final double dashWidth;
+  final double dashSpace;
+
+  DashedLinePainter({required this.color, required this.dashWidth, required this.dashSpace});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    final dashCount = (size.height / (dashWidth + dashSpace)).floor();
+
+    for (int i = 0; i < dashCount; i++) {
+      final startY = i * (dashWidth + dashSpace);
+      canvas.drawLine(
+        Offset(0, startY),
+        Offset(0, startY + dashWidth),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(DashedLinePainter oldPainter) => false;
+}
+
+class DashedLine extends StatelessWidget {
+  final Color color;
+  final double height;
+  final double dashWidth;
+  final double dashSpace;
+
+  DashedLine({
+    required this.color,
+    required this.height,
+    this.dashWidth = 1.0,
+    this.dashSpace = 3.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: DashedLinePainter(
+        color: color,
+        dashWidth: dashWidth,
+        dashSpace: dashSpace,
+      ),
+      child: Container(
+        width: 1.0,
+        height: height,
+      ),
+    );
+  }
+}
 
 
 
@@ -1136,8 +1215,11 @@ class FilterData{
 
 // todo стили
 // todo дополнить карточку расширенной инфой
+// todo checkbox
 // todo разобраться со временем now()
 // todo дублирование элементов при фильтрации
+// todo json config глобальный, доступ из всего кода
+// todo анимация свайпвов
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
