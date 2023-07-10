@@ -3,8 +3,13 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-import 'package:flutter_dialogs/flutter_dialogs.dart';
+
+
+import 'CardName.dart';
+import 'ColorChangingCircle.dart';
+import 'DashedLine.dart';
+import 'FilterData.dart';
+
 
 enum TimeRange {
   Hour,
@@ -62,49 +67,101 @@ class _MyHomePageState extends State<MyHomePage> {
   int selectedPage = 1;
   bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
-  List<Color> myColors = [Color(0xFF4285F4),
+  List<Color> myColors = [
+    Color(0xFF4285F4),
     Color(0xFF38C25D),
     Color(0xFFFFCA31),
     Color(0xFFEA4335),
     Color(0xFFAD2C72),
     Color(0xFF858B99),
     Color(0xFFD9E2EC),
-    Color(0xFF4285F4)];
+    Color(0xFF4285F4)
+  ];
   TimeRange selectedTimeRange = TimeRange.Hour;
   Map<Container, FilterData> filter = {
-  Container( height: 24, width: 24, decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(4.0), color: const Color(0xFF4285F4),
-  ),) : FilterData(false, 0),
-  Container( height: 24, width: 24, decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(4.0),color:  const Color(0xFF38C25D),
-  ),) : FilterData(false, 1),
-  Container( height: 24, width: 24, decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(4.0),color:  const Color(0xFFFFCA31),
-  ),) : FilterData(false, 2),
-    Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFFEA4335),
-    ),) : FilterData(false, 3),
-    Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFFAD2C72),
-    ),) : FilterData(false, 4),
-    Container( height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),color: const Color(0xFF858B99),
-    ),) : FilterData(false, 5),
-    Container(decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(4.0),
-  ), height: 24, width: 24,child: const Text('C1') ,):FilterData(false,6),
-    Container(height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),
-    ),child: const Text('C2'),):FilterData(false,7),
-    Container(height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),
-    ),child: const Text('C3'),):FilterData(false,8),
-    Container(height: 24, width: 24, decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(4.0),
-    ),child: const Text('C4'),):FilterData(false,9),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFF4285F4),
+      ),
+    ): FilterData(false, 0),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFF38C25D),
+      ),
+    ): FilterData(false, 1),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFFFFCA31),
+      ),
+    ): FilterData(false, 2),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFFEA4335),
+      ),
+    ): FilterData(false, 3),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFFAD2C72),
+      ),
+    ): FilterData(false, 4),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+        color: const Color(0xFF858B99),
+      ),
+    ): FilterData(false, 5),
+    Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      height: 24,
+      width: 24,
+      child: const Text('C1'),
+    ): FilterData(false, 6),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: const Text('C2'),
+    ): FilterData(false, 7),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: const Text('C3'),
+    ): FilterData(false, 8),
+    Container(
+      height: 24,
+      width: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: const Text('C4'),
+    ): FilterData(false, 9),
   };
   ColorChangingCircle colorChangingCircle =
-  ColorChangingCircle(dataIndex: 0, colors: [
+  const ColorChangingCircle(dataIndex: 0, colors: [
     Color(0xFF4285F4),
     Color(0xFF38C25D),
     Color(0xFFFFCA31),
@@ -119,88 +176,135 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _readAndParseJsonFile();
-    _controller = TextEditingController(text:selectedPage.toString());
+    _controller = TextEditingController(text: selectedPage.toString());
   }
 
   Future<void> _readAndParseJsonFile() async {
-log(DateTime.fromMillisecondsSinceEpoch(int.parse(DateTime.now().millisecondsSinceEpoch.toString().substring(0, 10))).toString());
+    log(DateTime.fromMillisecondsSinceEpoch(int.parse(
+        DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString()
+            .substring(0, 10)))
+        .toString());
     try {
-      String jsonString ;
-log('execute json with time filter $selectedTimeRange and page $selectedPage');
-if(selectedPage==1) {
-  jsonString = await rootBundle.loadString('assets/1.txt');
-} else {
-  jsonString = await rootBundle.loadString('assets/2.txt');
-}
-
+      String jsonString;
+      log(
+          'execute json with time filter $selectedTimeRange and page $selectedPage');
+      if (selectedPage == 1) {
+        jsonString = await rootBundle.loadString('assets/1.txt');
+      } else {
+        jsonString = await rootBundle.loadString('assets/2.txt');
+      }
 
       if (jsonString.isNotEmpty) {
         List allInformation = json.decode(jsonString)['data']['alerts'];
         List filteredInformation = [];
         List colorFilter = [];
+        List searchFilter = [];
         int counter = 0;
+        int searchCounter = 0;
 
         if (selectedTimeRange == TimeRange.Hour) {
           filteredInformation = allInformation
               .where((info) =>
-                  DateTime.now()
-                      .toLocal()
-                      .add(const Duration(hours: 3))
-                      .difference(
-                        DateTime.fromMillisecondsSinceEpoch(
-                          int.parse(info['time_value']) * 1000,
-                        ),
-                      ) <
-                  const Duration(hours: 1))
+          DateTime.now()
+              .toLocal()
+              .add(const Duration(hours: 3))
+              .difference(
+            DateTime.fromMillisecondsSinceEpoch(
+              int.parse(info['time_value']) * 1000,
+            ),
+          ) <
+              const Duration(hours: 1))
               .toList();
         } else if (selectedTimeRange == TimeRange.Today) {
           filteredInformation = allInformation
               .where((info) =>
-                  DateTime.now().toLocal().add(const Duration(hours: 3)).day ==
-                  DateTime.fromMillisecondsSinceEpoch(
-                    int.parse(info['time_value']) * 1000,
-                  ).day)
+          DateTime
+              .now()
+              .toLocal()
+              .add(const Duration(hours: 3))
+              .day ==
+              DateTime
+                  .fromMillisecondsSinceEpoch(
+                int.parse(info['time_value']) * 1000,
+              )
+                  .day)
               .toList();
         } else if (selectedTimeRange == TimeRange.Yesterday) {
           filteredInformation = allInformation
               .where((info) =>
-                  DateTime.now()
-                      .toLocal()
-                      .add(const Duration(hours: 3))
-                      .subtract(const Duration(days: 1))
-                      .day ==
-                  DateTime.fromMillisecondsSinceEpoch(
-                    int.parse(info['time_value']) * 1000,
-                  ).day)
+          DateTime
+              .now()
+              .toLocal()
+              .add(const Duration(hours: 3))
+              .subtract(const Duration(days: 1))
+              .day ==
+              DateTime
+                  .fromMillisecondsSinceEpoch(
+                int.parse(info['time_value']) * 1000,
+              )
+                  .day)
               .toList();
         }
+        int gg = 0;
         if (filteredInformation.isNotEmpty) {
-          for (int i = 0; i < filter.length; i++) {
+          //todo сделать относительно карты, а не фильтра
+          for (int i = 0; i < filteredInformation.length; i++) {
             //фильтр информации
-            if (filter.values
-                .firstWhere((filterData) => filterData.intValue == i)
-                .booleanValue == true) {
-              counter++;
-              if (i < 6) {
-                colorFilter += filteredInformation
-                    .where((info) => info['state'] == i)
-                    .toList();
-                if (i == 0) {
-                  colorFilter += filteredInformation
-                      .where((info) => info['state'] == 7)
-                      .toList();
+            var element = filteredInformation[i];
+
+            for (int j = 0; j < filter.length; j++) {
+              if (filter.values
+                  .elementAt(j)
+                  .booleanValue == true) { //не проверяет true
+                counter++;
+                if (j < 6) {
+                  if (element['state'] == j) {
+                    colorFilter.add(element);
+                  }
+                  if (j == 0) {
+                    colorFilter += filteredInformation
+                        .where((info) => info['state'] == 7)
+                        .toList();
+                  }
+                  break;
+                } else if (5 < j && j < 10) {
+                  if (element['label'] == indexIntoLabel(j)) {
+                    colorFilter.add(element);
+                  }
+                  break;
                 }
-              } else if (5 < i && i < 10) {
-                colorFilter += filteredInformation
-                    .where((info) => info['label'] == indexIntoLabel(i))
-                    .toList();
               }
+            }
+          }
+        }
+        if (filteredInformation.isNotEmpty && searchQuery.isNotEmpty) {
+          if (colorFilter.isEmpty) {
+            colorFilter = filteredInformation;
+          }
+          for (int i = 0; i < colorFilter.length; i++) {
+            if (colorFilter[i]['name']
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase())) {
+              searchFilter.add(colorFilter[i]);
+              searchCounter++;
+            } else if (colorFilter[i]['target_name']
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase())) {
+              searchFilter.add(colorFilter[i]);
+              searchCounter++;
             }
           }
         }
         setState(() {
           if (counter != 0) {
             information = colorFilter;
+          } else if (searchCounter != 0 && searchFilter.isNotEmpty) {
+            information = searchFilter;
+          } else if (searchCounter != 0 && searchFilter.isEmpty) {
+            information = [];
           } else {
             information = filteredInformation;
           }
@@ -233,7 +337,6 @@ if(selectedPage==1) {
   Widget build(BuildContext context) {
     GlobalKey popupMenuKey = GlobalKey();
 
-
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -256,7 +359,7 @@ if(selectedPage==1) {
                         },
                         style: ElevatedButton.styleFrom(
                           elevation:
-                              selectedTimeRange == TimeRange.Hour ? 2.0 : 0.0,
+                          selectedTimeRange == TimeRange.Hour ? 2.0 : 0.0,
                           backgroundColor: selectedTimeRange == TimeRange.Hour
                               ? const Color(0xFF93959A)
                               : const Color(0xFFF0F1F2),
@@ -284,7 +387,7 @@ if(selectedPage==1) {
                         },
                         style: ElevatedButton.styleFrom(
                           elevation:
-                              selectedTimeRange == TimeRange.Today ? 2.0 : 0.0,
+                          selectedTimeRange == TimeRange.Today ? 2.0 : 0.0,
                           backgroundColor: selectedTimeRange == TimeRange.Today
                               ? const Color(0xFF93959A)
                               : const Color(0xFFF0F1F2),
@@ -312,13 +415,13 @@ if(selectedPage==1) {
                         },
                         style: ElevatedButton.styleFrom(
                             foregroundColor:
-                                selectedTimeRange == TimeRange.Yesterday
-                                    ? const Color(0xFFF0F1F2)
-                                    : const Color(0xFF93959A),
+                            selectedTimeRange == TimeRange.Yesterday
+                                ? const Color(0xFFF0F1F2)
+                                : const Color(0xFF93959A),
                             backgroundColor:
-                                selectedTimeRange == TimeRange.Yesterday
-                                    ? const Color(0xFF93959A)
-                                    : const Color(0xFFF0F1F2),
+                            selectedTimeRange == TimeRange.Yesterday
+                                ? const Color(0xFF93959A)
+                                : const Color(0xFFF0F1F2),
                             elevation: selectedTimeRange == TimeRange.Yesterday
                                 ? 2.0
                                 : 0.0,
@@ -360,12 +463,12 @@ if(selectedPage==1) {
 
                           searchTimer =
                               Timer(const Duration(milliseconds: 500), () {
-                            setState(() {
-                              searchQuery = value;
-                            });
+                                setState(() {
+                                  searchQuery = value;
+                                });
 
-                            _readAndParseJsonFile();
-                          });
+                                _readAndParseJsonFile();
+                              });
                         },
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -408,23 +511,29 @@ if(selectedPage==1) {
 
                       itemBuilder: (BuildContext context) {
                         return [
-                          PopupMenuItem<String>(
-                            child: Column(
+                          PopupMenuItem<String>(child: StatefulBuilder(builder:
+                              (BuildContext context, StateSetter setState) {
+                            return Column(
                               children: [
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value: filter.values.firstWhere((filterData) => filterData.intValue == 0).booleanValue,
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 0)
+                                          .booleanValue,
                                       onChanged: (bool? value) {
-                                          setState(() {
-                                            // Обновление состояния Checkbox
-                                            filter.values
-                                                .where((filterData) => filterData.intValue == 0)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
-                                            });
+                                        setState(() {
+                                          // Обновление состояния Checkbox
+                                          filter.values
+                                              .where((filterData) =>
+                                          filterData.intValue == 0)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
                                           });
-                                          popupMenuKey.currentState?.setState(() {});
+                                        });
+                                        popupMenuKey.currentState
+                                            ?.setState(() {});
                                       },
                                     ),
                                     Container(
@@ -437,12 +546,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 1)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 1)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 1)
+                                              .where((filterData) =>
+                                          filterData.intValue == 1)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -459,12 +570,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 2)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 2)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 2)
+                                              .where((filterData) =>
+                                          filterData.intValue == 2)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -481,13 +594,15 @@ if(selectedPage==1) {
                                 Row(
                                   children: [
                                     Checkbox(
-                                      value:filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 3)
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 3)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 3)
+                                              .where((filterData) =>
+                                          filterData.intValue == 3)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -504,12 +619,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 4)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 4)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 4)
+                                              .where((filterData) =>
+                                          filterData.intValue == 4)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -526,12 +643,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 5)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 5)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 5)
+                                              .where((filterData) =>
+                                          filterData.intValue == 5)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -549,12 +668,14 @@ if(selectedPage==1) {
                                   children: [
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 6)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 6)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 6)
+                                              .where((filterData) =>
+                                          filterData.intValue == 6)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -567,12 +688,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 7)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 7)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 7)
+                                              .where((filterData) =>
+                                          filterData.intValue == 7)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -586,12 +709,14 @@ if(selectedPage==1) {
                                   children: [
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 8)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 8)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 8)
+                                              .where((filterData) =>
+                                          filterData.intValue == 8)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -604,12 +729,14 @@ if(selectedPage==1) {
                                     ),
                                     Checkbox(
                                       value: filter.values
-                                          .firstWhere((filterData) => filterData.intValue == 9)
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue == 9)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
-                                              .where((filterData) => filterData.intValue == 9)
+                                              .where((filterData) =>
+                                          filterData.intValue == 9)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -622,7 +749,11 @@ if(selectedPage==1) {
                                 TextButton(
                                     onPressed: () {
                                       _readAndParseJsonFile();
-                                      Navigator.pop(context);
+                                      try {
+                                        Navigator.pop(context);
+                                      } catch (e) {
+                                        log('$e');
+                                      }
                                     },
                                     child: const Text(
                                       'применить',
@@ -633,8 +764,8 @@ if(selectedPage==1) {
                                           color: Color(0xFF515357)),
                                     ))
                               ],
-                            ),
-                          ),
+                            );
+                          })),
                         ];
                       },
                     ),
@@ -642,109 +773,121 @@ if(selectedPage==1) {
                 ],
               ),
             ),
-            const SizedBox(height: 8,),
-             Row(children: filter.entries
-                 .where((entry) => entry.value.booleanValue == true)
-                 .map((entry) => Material(
-               elevation: 4.0,
-               shape: RoundedRectangleBorder(
-                 borderRadius: BorderRadius.circular(4.0),
-               ),
-               child: InkWell(
-                 onTap: () {
-                   setState(() {
-                     entry.value.booleanValue = false;
-                     _readAndParseJsonFile();
-                   });
-                 },
-                 child: Row(
-                   children: [
-                     SizedBox(
-                       width: 24,
-                       height: 24,
-                       child: entry.key,
-                     ),
-                     const SizedBox(width: 4),
-                     SizedBox(
-                       width: 24,
-                       height: 24,
-                       child: IconButton(
-                         padding: EdgeInsets.zero,
-                         iconSize: 24,
-                         icon: const Icon(Icons.close),
-                         onPressed: () {
-                           setState(() {
-                             entry.value.booleanValue = false;
-                             _readAndParseJsonFile();
-                           });
-                         },
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
-             ))
-                 .toList(),
+            const SizedBox(
+              height: 8,
             ),
-
-
-            const SizedBox(height: 20,),
-              Expanded(
+            Row(
+              children: filter.entries
+                  .where((entry) => entry.value.booleanValue == true)
+                  .map((entry) =>
+                  Material(
+                    elevation: 4.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          entry.value.booleanValue = false;
+                          _readAndParseJsonFile();
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: entry.key,
+                          ),
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              iconSize: 24,
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                setState(() {
+                                  entry.value.booleanValue = false;
+                                  _readAndParseJsonFile();
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ))
+                  .toList(),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Expanded(
               child: GestureDetector(
                 onHorizontalDragUpdate: _handleSwipe, // Обработка свайпа
-                child:ListView.builder(
-                itemExtent: 132,
-                itemCount: information.length,
-                itemBuilder: (context, index) {
-                  final String name = information[index]['name'].toString();
-                  final String targetName =
-                      information[index]['target_name'].toString();
-                  final bool nameContainsQuery =
-                      name.toLowerCase().contains(searchQuery.toLowerCase());
-                  final bool targetNameContainsQuery = targetName
-                      .toLowerCase()
-                      .contains(searchQuery.toLowerCase());
+                child: ListView.builder(
+                  itemExtent: 132,
+                  itemCount: information.length,
+                  itemBuilder: (context, index) {
+                    final String name = information[index]['name'].toString();
+                    final String targetName =
+                    information[index]['target_name'].toString();
+                    final bool nameContainsQuery =
+                    name.toLowerCase().contains(searchQuery.toLowerCase());
+                    final bool targetNameContainsQuery = targetName
+                        .toLowerCase()
+                        .contains(searchQuery.toLowerCase());
 
-                  if (searchQuery.isNotEmpty &&
+                    /* if (searchQuery.isNotEmpty &&
                       !(nameContainsQuery || targetNameContainsQuery)) {
                     return const SizedBox.shrink(); // прячем карточку
-                  }
-                  final int stateIndex = information[index]['state'];
-                  final Color nowColor = colorChangingCircle.colors[stateIndex];
-                  return Card(
-                    elevation: 0,
-                    margin: const EdgeInsets.all(0),
-                    child: Container(
-                      decoration:  BoxDecoration(
-                        border: Border(
+                  }*/
+                    int stateIndex = information[index]['state'];
+                    final Color nowColor =
+                    colorChangingCircle.colors[stateIndex];
+                    return Card(
+                      elevation: 0,
+                      margin: const EdgeInsets.all(0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
                             bottom: BorderSide(color: Color(0xFFE3E3E3)),
-                          left: BorderSide(
-                          color: nowColor,
-                          width: 4,
+                            left: BorderSide(
+                              color: nowColor,
+                              width: 4,
+                            ),
+                          ),
                         ),
-                        ),
-                      ),
-                      child: ListTile(
-                        subtitle: Column(
-                          children: [
-                            SizedBox(height: 6,),
-                            Row(
-                              children: [
-                                const Column(
-                                  children: [SizedBox(width: 16,)],
-                                ),
-                                 Column(
+                        child: ListTile(
+                          subtitle: Column(
+                            children: [
+                              SizedBox(
+                                height: 6,
+                              ),
+                              Row(
+                                children: [
+                                  const Column(
+                                    children: [
+                                      SizedBox(
+                                        width: 16,
+                                      )
+                                    ],
+                                  ),
+                                  Column(
                                     children: [
                                       Align(
                                         alignment: Alignment.topLeft,
                                         child: Container(
-                                        height: 16,
-                                        width: 16,
-                                        decoration: BoxDecoration(
-                                          color: nowColor,
-                                          borderRadius: BorderRadius.circular(8),
+                                          height: 16,
+                                          width: 16,
+                                          decoration: BoxDecoration(
+                                            color: nowColor,
+                                            borderRadius:
+                                            BorderRadius.circular(8),
+                                          ),
                                         ),
-                                      ),
                                       ),
                                       Container(
                                         width: 1,
@@ -761,353 +904,424 @@ if(selectedPage==1) {
                                       ),
                                     ],
                                   ),
-
-                                const Column(children: [SizedBox(width: 8,)],),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          CardName().settingNameToCard(information[index]['state']),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'Roboto',
-                                            fontSize: 17,
-                                            color: Color(0xFF515357),
+                                  const Column(
+                                    children: [
+                                      SizedBox(
+                                        width: 8,
+                                      )
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            CardName().settingNameToCard(
+                                                information[index]['state']),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'Roboto',
+                                              fontSize: 17,
+                                              color: Color(0xFF515357),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 8,),
-                                        Text(
-                                          information[index]['name'].toString(),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Roboto',
-                                            fontSize: 14,
-                                            color: Color(0xFF515357),
+                                          const SizedBox(
+                                            height: 8,
                                           ),
-                                        ),
-                                        const SizedBox(height: 4,),
-                                        Text(
-                                          information[index]['target_name'].toString(),
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Roboto',
-                                            fontSize: 14,
-                                            color: Color(0xFF93959A),
+                                          Text(
+                                            information[index]['name']
+                                                .toString(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontFamily: 'Roboto',
+                                              fontSize: 14,
+                                              color: Color(0xFF515357),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 12,),
-                                        Text(
-                                          CardName().getTimeText(
-                                            information[index]['time_value'],
-                                            selectedTimeRange,
+                                          const SizedBox(
+                                            height: 4,
                                           ),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Roboto',
-                                            fontSize: 14,
-                                            color: Color(0xFF515357),
+                                          Text(
+                                            information[index]['target_name']
+                                                .toString(),
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontFamily: 'Roboto',
+                                              fontSize: 14,
+                                              color: Color(0xFF93959A),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(
+                                            height: 12,
+                                          ),
+                                          Text(
+                                            CardName().getTimeText(
+                                              information[index]['time_value'],
+                                              selectedTimeRange,
+                                            ),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontFamily: 'Roboto',
+                                              fontSize: 14,
+                                              color: Color(0xFF515357),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
+                          onLongPress: () {
+                            showDialog(
+                              //карточка подробной информации
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    // Установка ширины контейнера равной ширине экрана
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        children: [
+                                          SizedBox(
+                                            height: 6,
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: 16,
+                                              ),
+                                              Container(
+                                                height: 16,
+                                                width: 16,
+                                                decoration: BoxDecoration(
+                                                  color: nowColor,
+                                                  borderRadius:
+                                                  BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 8,
+                                              ),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      CardName()
+                                                          .settingNameToCard(
+                                                          information[index]
+                                                          ['state']),
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                        FontWeight.w500,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 17,
+                                                        color:
+                                                        Color(0xFF515357),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 8,
+                                                    ),
+                                                    Text(
+                                                      information[index]['name']
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                        FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color:
+                                                        Color(0xFF515357),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 4,
+                                                    ),
+                                                    Text(
+                                                      information[index]
+                                                      ['target_name']
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                        FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color:
+                                                        Color(0xFF93959A),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "IP-адрес:${information[index]['ip']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "Шаблон сигнала: ${information[index]['alert_template']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "Сигнал: ${information[index]['subalert']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "Значение:${information[index]['value'] +
+                                                            information[index]['units']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "Описание:${information[index]['description']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                        "Метка:${information[index]['label']}",
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w400,
+                                                          fontFamily: 'Roboto',
+                                                          fontSize: 14,
+                                                          color:
+                                                          Color(0xFF93959A),
+                                                        )),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Text(
+                                                      CardName().getTimeText(
+                                                        information[index]
+                                                        ['time_value'],
+                                                        selectedTimeRange,
+                                                      ),
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                        FontWeight.w400,
+                                                        fontFamily: 'Roboto',
+                                                        fontSize: 14,
+                                                        color:
+                                                        Color(0xFF515357),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }, //onlongpress
                         ),
-
-
-                        onLongPress: () {
-                          showDialog(
-                            //карточка подробной информации
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: Container(
-                                  width: double.infinity, // Установка ширины контейнера равной ширине экрана
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      children: [
-                                        SizedBox(height: 6,),
-                                        Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(width: 16,),
-                                            Container(
-                                              height: 16,
-                                              width: 16,
-                                              decoration: BoxDecoration(
-                                                color: nowColor,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                            SizedBox(width: 8,),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    CardName().settingNameToCard(information[index]['state']),
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w500,
-                                                      fontFamily: 'Roboto',
-                                                      fontSize: 17,
-                                                      color: Color(0xFF515357),
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 8,),
-                                                  Text(
-                                                    information[index]['name'].toString(),
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontFamily: 'Roboto',
-                                                      fontSize: 14,
-                                                      color: Color(0xFF515357),
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 4,),
-                                                  Text(
-                                                    information[index]['target_name'].toString(),
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontFamily: 'Roboto',
-                                                      fontSize: 14,
-                                                      color: Color(0xFF93959A),
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 12,),
-                                                  Text(
-                                                      "IP-адрес:${information[index]['ip']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                      "Шаблон сигнала: ${information[index]['alert_template']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                      "Сигнал: ${information[index]['subalert']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                      "Значение:${information[index]['value']+information[index]['units']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                      "Описание:${information[index]['description']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                      "Метка:${information[index]['label']}",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color: Color(0xFF93959A),
-                                                      )),
-                                                  const SizedBox(
-                                                    height: 12,
-                                                  ),
-                                                  Text(
-                                                    CardName().getTimeText(
-                                                      information[index]['time_value'],
-                                                      selectedTimeRange,
-                                                    ),
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontFamily: 'Roboto',
-                                                      fontSize: 14,
-                                                      color: Color(0xFF515357),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-
-
-
-                        }, //onlongpress
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-    ),
-      Align(
-        alignment: Alignment.bottomCenter,
-        child:
-            SizedBox(
-              height: 50,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        selectedPage = 1;
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.keyboard_double_arrow_left),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        if(selectedPage!=1) {
-                          selectedPage -= 1;
-                        }
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.chevron_left),
-                  ),
-                  const Text('Страница:',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),
-                  ),
-                  SizedBox(
-                    width: 40,
-                    child: TextField(
-                      controller: _controller,
-                      onChanged: _validateInput,
-                      onSubmitted: _onSubmitted, // Обработка события "Готово"
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                height: 50,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedPage = 1;
+                        });
+                        _readAndParseJsonFile();
+                        _controller.text = selectedPage.toString();
+                      },
+                      icon: const Icon(Icons.keyboard_double_arrow_left),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          if (selectedPage != 1) {
+                            selectedPage -= 1;
+                          }
+                        });
+                        _readAndParseJsonFile();
+                        _controller.text = selectedPage.toString();
+                      },
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    const Text(
+                      'Страница:',
+                      style: TextStyle(
                         fontSize: 15,
+                        fontFamily: 'Roboto',
                         fontWeight: FontWeight.w500,
                       ),
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        focusedErrorBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
+                    ),
+                    SizedBox(
+                      width: 40,
+                      child: TextField(
+                        controller: _controller,
+                        onChanged: _validateInput,
+                        onSubmitted: _onSubmitted,
+                        // Обработка события "Готово"
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: _isValid ? const BorderSide(color: Colors.grey) : const BorderSide(color: Colors.red),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: _isValid ? const BorderSide(color: Colors.blue) : const BorderSide(color: Colors.red),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          focusedErrorBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: _isValid
+                                ? const BorderSide(color: Colors.grey)
+                                : const BorderSide(color: Colors.red),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: _isValid
+                                ? const BorderSide(color: Colors.blue)
+                                : const BorderSide(color: Colors.red),
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  const Text('из',
-                    style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),),
-                  Text(countOfPages.toString(),style: const TextStyle(
-                    fontSize: 15,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                  ),), // Просто пример, заменить на ответ сервера о количестве страниц
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        if(selectedPage!=countOfPages){
-                          selectedPage+=1;
-                        }
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.chevron_right),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                     setState(() {
-                       selectedPage=countOfPages;
-                     });
-                     _readAndParseJsonFile();
-                     _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.keyboard_double_arrow_right),
-                  ),
-                ],
+                    const Text(
+                      'из',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      countOfPages.toString(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // Просто пример, заменить на ответ сервера о количестве страниц
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          if (selectedPage != countOfPages) {
+                            selectedPage += 1;
+                          }
+                        });
+                        _readAndParseJsonFile();
+                        _controller.text = selectedPage.toString();
+                      },
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedPage = countOfPages;
+                        });
+                        _readAndParseJsonFile();
+                        _controller.text = selectedPage.toString();
+                      },
+                      icon: const Icon(Icons.keyboard_double_arrow_right),
+                    ),
+                  ],
+                ),
               ),
             ),
-      ),
           ],
         ),
       ),
     );
   }
+
   void _validateInput(String value) {
     setState(() {
       // Проверьте условие на основе вашего диапазона значений
-      if (value.isNotEmpty && int.tryParse(value) != null && int.parse(value) > 0 && int.parse(value) <= countOfPages) {
+      if (value.isNotEmpty &&
+          int.tryParse(value) != null &&
+          int.parse(value) > 0 &&
+          int.parse(value) <= countOfPages) {
         _isValid = true;
       } else {
         _isValid = false;
       }
     });
   }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
+
   void _onSubmitted(String value) {
     // Обработка значения, когда пользователь нажимает клавишу "Готово" на клавиатуре
     // Можно выполнить дополнительную обработку или переход на другую страницу
@@ -1119,11 +1333,13 @@ if(selectedPage==1) {
           int.parse(value) <= countOfPages) {
         selectedPage = int.parse(value);
       } else {
-        _controller.text = selectedPage.toString(); // Восстановление предыдущего значения
+        _controller.text =
+            selectedPage.toString(); // Восстановление предыдущего значения
       }
     });
     _readAndParseJsonFile();
   }
+
   void _handleSwipe(DragUpdateDetails details) {
     // Определение направления свайпа и изменение страницы в зависимости от направления
     if (details.primaryDelta != null) {
@@ -1149,152 +1365,18 @@ if(selectedPage==1) {
     }
   }
 }
-
-class ColorChangingCircle  {
-  final int dataIndex;
-  final List<Color> colors;
-
-  const ColorChangingCircle({
-    Key? key,
-    required this.dataIndex,
-    required this.colors,
-  }) ;
-}
-
-
-class DashedLinePainter extends CustomPainter {
-  final Color color;
-  final double dashWidth;
-  final double dashSpace;
-
-  DashedLinePainter({required this.color, required this.dashWidth, required this.dashSpace});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    final dashCount = (size.height / (dashWidth + dashSpace)).floor();
-
-    for (int i = 0; i < dashCount; i++) {
-      final startY = i * (dashWidth + dashSpace);
-      canvas.drawLine(
-        Offset(0, startY),
-        Offset(0, startY + dashWidth),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(DashedLinePainter oldPainter) => false;
-}
-
-class DashedLine extends StatelessWidget {
-  final Color color;
-  final double height;
-  final double dashWidth;
-  final double dashSpace;
-
-  DashedLine({
-    required this.color,
-    required this.height,
-    this.dashWidth = 1.0,
-    this.dashSpace = 3.0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: DashedLinePainter(
-        color: color,
-        dashWidth: dashWidth,
-        dashSpace: dashSpace,
-      ),
-      child: Container(
-        width: 1.0,
-        height: height,
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-class CardName {
-  String settingNameToCard(int index) {
-    switch (index) {
-      case 0:
-        return 'Резерв';
-      case 1:
-        return 'Штатно';
-      case 2:
-        return 'Сигнализация';
-      case 3:
-        return 'Риск аварии';
-      case 4:
-        return 'Критические события';
-      case 5:
-        return 'Нет данных';
-      case 6:
-        return '';
-      case 7:
-        return 'Резерв';
-      default:
-        log('вышли из допустимых индексов');
-        return '';
-    }
-  }
-
-  String getTimeText(String timeValue, TimeRange selectedTimeRange) {
-    if (selectedTimeRange == TimeRange.Hour) {
-      final DateTime now =
-          DateTime.now().toLocal().add(const Duration(hours: 3));
-      final DateTime eventTime =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-              .toUtc();
-      final int minutesAgo =
-          (now.millisecondsSinceEpoch - eventTime.millisecondsSinceEpoch) ~/
-              60000;
-
-      return '$minutesAgo мин. назад';
-    } else if (selectedTimeRange == TimeRange.Today) {
-      var date =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-              .toUtc();
-      final String formattedTime = DateFormat('HH:mm:ss').format(date);
-      return formattedTime;
-    } else if (selectedTimeRange == TimeRange.Yesterday) {
-      final DateTime eventTime =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-              .toUtc();
-      final String formattedDateTime =
-          DateFormat('HH:mm:ss dd.MM.yy ').format(eventTime);
-      return formattedDateTime;
-    } else {
-      return timeValue;
-    }
-  }
-}
-class FilterData{
-  bool? booleanValue;
-  int intValue;
-
-  FilterData(this.booleanValue, this.intValue);
-}
-
+// todo ссылка открывает окно
 // todo стили
-// todo дополнить карточку расширенной инфой
 // todo checkbox
 // todo разобраться со временем now()
 // todo дублирование элементов при фильтрации
 // todo json config глобальный, доступ из всего кода
 // todo анимация свайпвов
+// todo букавки побольше в доп инфе, отступы и выделение имени, а также пробел после :
+// поле поиска
+// отступ линии
+// расстояние до круглого
+// стили до конца недели
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
