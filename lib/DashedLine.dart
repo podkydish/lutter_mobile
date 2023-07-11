@@ -8,7 +8,7 @@ class DashedLine extends StatelessWidget {
   final double dashWidth;
   final double dashSpace;
 
-  DashedLine({
+  const DashedLine({super.key,
     required this.color,
     required this.height,
     this.dashWidth = 1.0,
@@ -23,7 +23,7 @@ class DashedLine extends StatelessWidget {
         dashWidth: dashWidth,
         dashSpace: dashSpace,
       ),
-      child: Container(
+      child: SizedBox(
         width: 1.0,
         height: height,
       ),

@@ -30,7 +30,7 @@ class CardName {
   }
 
   String getTimeText(String timeValue, TimeRange selectedTimeRange) {
-    if (selectedTimeRange == TimeRange.Hour) {
+    if (selectedTimeRange == TimeRange.hour) {
       final DateTime now =
       DateTime.now().toLocal().add(const Duration(hours: 3));
       final DateTime eventTime =
@@ -41,13 +41,13 @@ class CardName {
               60000;
 
       return '$minutesAgo мин. назад';
-    } else if (selectedTimeRange == TimeRange.Today) {
+    } else if (selectedTimeRange == TimeRange.today) {
       var date =
       DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
           .toUtc();
       final String formattedTime = DateFormat('HH:mm:ss').format(date);
       return formattedTime;
-    } else if (selectedTimeRange == TimeRange.Yesterday) {
+    } else if (selectedTimeRange == TimeRange.yesterday) {
       final DateTime eventTime =
       DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
           .toUtc();

@@ -3,18 +3,17 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:untitled/ConfigReader.dart';
 
 import 'CardName.dart';
 import 'ColorChangingCircle.dart';
 import 'DashedLine.dart';
 import 'FilterData.dart';
 
-
 enum TimeRange {
-  Hour,
-  Today,
-  Yesterday,
+  hour,
+  today,
+  yesterday,
 }
 
 void main() {
@@ -59,11 +58,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late TextEditingController _controller;
+  ConfigReader configReader = ConfigReader();
   Timer? searchTimer; // Переменная для хранения таймера
   String searchQuery = '';
   List information = [];
-  String firstPage = 'assets/2.txt';
-  String secondPage = 'assets/1.txt';
+  String firstPage = 'assets/1.txt';
+  String secondPage = 'assets/2.txt';
   int selectedPage = 1;
   bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Color(0xFFD9E2EC),
     Color(0xFF4285F4)
   ];
-  TimeRange selectedTimeRange = TimeRange.Hour;
+  TimeRange selectedTimeRange = TimeRange.hour;
   Map<Container, FilterData> filter = {
     Container(
       height: 24,
@@ -161,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ): FilterData(false, 9),
   };
   ColorChangingCircle colorChangingCircle =
-  const ColorChangingCircle(dataIndex: 0, colors: [
+      const ColorChangingCircle(dataIndex: 0, colors: [
     Color(0xFF4285F4),
     Color(0xFF38C25D),
     Color(0xFFFFCA31),
@@ -176,25 +176,20 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _readAndParseJsonFile();
+    configReader.readAndParseConfig();
+
     _controller = TextEditingController(text: selectedPage.toString());
   }
 
   Future<void> _readAndParseJsonFile() async {
-    log(DateTime.fromMillisecondsSinceEpoch(int.parse(
-        DateTime
-            .now()
-            .millisecondsSinceEpoch
-            .toString()
-            .substring(0, 10)))
-        .toString());
+    log((DateTime.now().add(DateTime.now().timeZoneOffset)).toString());
     try {
       String jsonString;
-      log(
-          'execute json with time filter $selectedTimeRange and page $selectedPage');
+      log('execute json with time filter $selectedTimeRange and page $selectedPage');
       if (selectedPage == 1) {
-        jsonString = await rootBundle.loadString('assets/1.txt');
+        jsonString = await rootBundle.loadString(firstPage);
       } else {
-        jsonString = await rootBundle.loadString('assets/2.txt');
+        jsonString = await rootBundle.loadString(secondPage);
       }
 
       if (jsonString.isNotEmpty) {
@@ -205,76 +200,62 @@ class _MyHomePageState extends State<MyHomePage> {
         int counter = 0;
         int searchCounter = 0;
 
-        if (selectedTimeRange == TimeRange.Hour) {
+        if (selectedTimeRange == TimeRange.hour) {
           filteredInformation = allInformation
               .where((info) =>
-          DateTime.now()
-              .toLocal()
-              .add(const Duration(hours: 3))
-              .difference(
-            DateTime.fromMillisecondsSinceEpoch(
-              int.parse(info['time_value']) * 1000,
-            ),
-          ) <
-              const Duration(hours: 1))
+                  DateTime.now()
+                      .toLocal()
+                      .add(const Duration(hours: 3))
+                      .difference(
+                        DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(info['time_value']) * 1000,
+                        ),
+                      ) <
+                  const Duration(hours: 1))
               .toList();
-        } else if (selectedTimeRange == TimeRange.Today) {
+        } else if (selectedTimeRange == TimeRange.today) {
           filteredInformation = allInformation
               .where((info) =>
-          DateTime
-              .now()
-              .toLocal()
-              .add(const Duration(hours: 3))
-              .day ==
-              DateTime
-                  .fromMillisecondsSinceEpoch(
-                int.parse(info['time_value']) * 1000,
-              )
-                  .day)
+                  DateTime.now().toLocal().add(const Duration(hours: 3)).day ==
+                  DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(info['time_value']) * 1000,
+                  ).day)
               .toList();
-        } else if (selectedTimeRange == TimeRange.Yesterday) {
+        } else if (selectedTimeRange == TimeRange.yesterday) {
           filteredInformation = allInformation
               .where((info) =>
-          DateTime
-              .now()
-              .toLocal()
-              .add(const Duration(hours: 3))
-              .subtract(const Duration(days: 1))
-              .day ==
-              DateTime
-                  .fromMillisecondsSinceEpoch(
-                int.parse(info['time_value']) * 1000,
-              )
-                  .day)
+                  DateTime.now()
+                      .toLocal()
+                      .add(const Duration(hours: 3))
+                      .subtract(const Duration(days: 1))
+                      .day ==
+                  DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(info['time_value']) * 1000,
+                  ).day)
               .toList();
         }
-        int gg = 0;
         if (filteredInformation.isNotEmpty) {
-          //todo сделать относительно карты, а не фильтра
           for (int i = 0; i < filteredInformation.length; i++) {
             //фильтр информации
             var element = filteredInformation[i];
-
             for (int j = 0; j < filter.length; j++) {
-              if (filter.values
-                  .elementAt(j)
-                  .booleanValue == true) { //не проверяет true
+              if (filter.values.elementAt(j).booleanValue == true) {
                 counter++;
                 if (j < 6) {
                   if (element['state'] == j) {
                     colorFilter.add(element);
+                    if (j == 0) {
+                      colorFilter += filteredInformation
+                          .where((info) => info['state'] == 7)
+                          .toList();
+                    }
+                    break;
                   }
-                  if (j == 0) {
-                    colorFilter += filteredInformation
-                        .where((info) => info['state'] == 7)
-                        .toList();
-                  }
-                  break;
                 } else if (5 < j && j < 10) {
                   if (element['label'] == indexIntoLabel(j)) {
                     colorFilter.add(element);
+                    break;
                   }
-                  break;
                 }
               }
             }
@@ -300,13 +281,15 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         setState(() {
           if (counter != 0) {
-            information = colorFilter;
+            information = colorFilter.take(configReader.recordsOnPage).toList();
           } else if (searchCounter != 0 && searchFilter.isNotEmpty) {
-            information = searchFilter;
+            information =
+                searchFilter.take(configReader.recordsOnPage).toList();
           } else if (searchCounter != 0 && searchFilter.isEmpty) {
             information = [];
           } else {
-            information = filteredInformation;
+            information =
+                filteredInformation.take(configReader.recordsOnPage).toList();
           }
         });
       } else {
@@ -351,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            selectedTimeRange = TimeRange.Hour;
+                            selectedTimeRange = TimeRange.hour;
                             selectedPage = 1;
                             _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
@@ -359,11 +342,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                         style: ElevatedButton.styleFrom(
                           elevation:
-                          selectedTimeRange == TimeRange.Hour ? 2.0 : 0.0,
-                          backgroundColor: selectedTimeRange == TimeRange.Hour
+                              selectedTimeRange == TimeRange.hour ? 2.0 : 0.0,
+                          backgroundColor: selectedTimeRange == TimeRange.hour
                               ? const Color(0xFF93959A)
                               : const Color(0xFFF0F1F2),
-                          foregroundColor: selectedTimeRange == TimeRange.Hour
+                          foregroundColor: selectedTimeRange == TimeRange.hour
                               ? const Color(0xFFF0F1F2)
                               : const Color(0xFF93959A),
                           textStyle: const TextStyle(
@@ -380,18 +363,18 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           setState(() {
                             selectedPage = 1;
-                            selectedTimeRange = TimeRange.Today;
+                            selectedTimeRange = TimeRange.today;
                             _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
                           });
                         },
                         style: ElevatedButton.styleFrom(
                           elevation:
-                          selectedTimeRange == TimeRange.Today ? 2.0 : 0.0,
-                          backgroundColor: selectedTimeRange == TimeRange.Today
+                              selectedTimeRange == TimeRange.today ? 2.0 : 0.0,
+                          backgroundColor: selectedTimeRange == TimeRange.today
                               ? const Color(0xFF93959A)
                               : const Color(0xFFF0F1F2),
-                          foregroundColor: selectedTimeRange == TimeRange.Today
+                          foregroundColor: selectedTimeRange == TimeRange.today
                               ? const Color(0xFFF0F1F2)
                               : const Color(0xFF93959A),
                           textStyle: const TextStyle(
@@ -408,21 +391,21 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           setState(() {
                             selectedPage = 1;
-                            selectedTimeRange = TimeRange.Yesterday;
+                            selectedTimeRange = TimeRange.yesterday;
                             _controller.text = selectedPage.toString();
                             _readAndParseJsonFile();
                           });
                         },
                         style: ElevatedButton.styleFrom(
                             foregroundColor:
-                            selectedTimeRange == TimeRange.Yesterday
-                                ? const Color(0xFFF0F1F2)
-                                : const Color(0xFF93959A),
+                                selectedTimeRange == TimeRange.yesterday
+                                    ? const Color(0xFFF0F1F2)
+                                    : const Color(0xFF93959A),
                             backgroundColor:
-                            selectedTimeRange == TimeRange.Yesterday
-                                ? const Color(0xFF93959A)
-                                : const Color(0xFFF0F1F2),
-                            elevation: selectedTimeRange == TimeRange.Yesterday
+                                selectedTimeRange == TimeRange.yesterday
+                                    ? const Color(0xFF93959A)
+                                    : const Color(0xFFF0F1F2),
+                            elevation: selectedTimeRange == TimeRange.yesterday
                                 ? 2.0
                                 : 0.0,
                             textStyle: const TextStyle(
@@ -463,12 +446,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
                           searchTimer =
                               Timer(const Duration(milliseconds: 500), () {
-                                setState(() {
-                                  searchQuery = value;
-                                });
+                            setState(() {
+                              searchQuery = value;
+                            });
 
-                                _readAndParseJsonFile();
-                              });
+                            _readAndParseJsonFile();
+                          });
                         },
                         decoration: const InputDecoration(
                           border: InputBorder.none,
@@ -502,6 +485,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
                       //окно фильтрации
                       key: popupMenuKey,
                       icon: const Icon(
@@ -520,14 +504,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 0)
+                                              filterData.intValue == 0)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           // Обновление состояния Checkbox
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 0)
+                                                  filterData.intValue == 0)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -547,13 +531,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 1)
+                                              filterData.intValue == 1)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 1)
+                                                  filterData.intValue == 1)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -571,13 +555,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 2)
+                                              filterData.intValue == 2)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 2)
+                                                  filterData.intValue == 2)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -591,18 +575,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ],
                                 ),
+                                Container(
+                                  height: 1,
+                                  color: Color(0xFFE3E3E3),
+                                ),
                                 Row(
                                   children: [
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 3)
+                                              filterData.intValue == 3)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 3)
+                                                  filterData.intValue == 3)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -620,13 +608,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 4)
+                                              filterData.intValue == 4)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 4)
+                                                  filterData.intValue == 4)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -644,13 +632,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 5)
+                                              filterData.intValue == 5)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 5)
+                                                  filterData.intValue == 5)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -664,18 +652,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ],
                                 ),
+                                Container(
+                                  height: 1,
+                                  color: Color(0xFFE3E3E3),
+                                ),
                                 Row(
                                   children: [
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 6)
+                                              filterData.intValue == 6)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 6)
+                                                  filterData.intValue == 6)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -689,13 +681,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 7)
+                                              filterData.intValue == 7)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 7)
+                                                  filterData.intValue == 7)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -703,10 +695,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     const Text('C2'),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
@@ -724,19 +715,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     const Text('C3'),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  height: 1,
+                                  color: Color(0xFFE3E3E3),
+                                ),
+                                Row(
+                                  children: [
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 9)
+                                              filterData.intValue == 9)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 9)
+                                                  filterData.intValue == 9)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -745,6 +741,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                     const Text('C4'),
                                   ],
+                                ),
+                                Container(
+                                  height: 1,
+                                  color: Color(0xFFE3E3E3),
                                 ),
                                 TextButton(
                                     onPressed: () {
@@ -770,57 +770,80 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                     ),
                   ),
+                  SizedBox(
+                    width: 16,
+                  ),
                 ],
               ),
             ),
             const SizedBox(
               height: 8,
             ),
-            Row(
-              children: filter.entries
-                  .where((entry) => entry.value.booleanValue == true)
-                  .map((entry) =>
-                  Material(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          entry.value.booleanValue = false;
-                          _readAndParseJsonFile();
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: entry.key,
-                          ),
-                          const SizedBox(width: 4),
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              iconSize: 24,
-                              icon: const Icon(Icons.close),
-                              onPressed: () {
-                                setState(() {
-                                  entry.value.booleanValue = false;
-                                  _readAndParseJsonFile();
-                                });
-                              },
+
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Container(
+                alignment: Alignment.topLeft, // Align the Wrap to the top left
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.start,
+                  children: filter.entries
+                      .where((entry) => entry.value.booleanValue == true)
+                      .map(
+                        (entry) => Material(
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            entry.value.booleanValue = false;
+                            _readAndParseJsonFile();
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: entry.key,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                iconSize: 24,
+                                icon: const Icon(Icons.close),
+                                onPressed: () {
+                                  setState(() {
+                                    entry.value.booleanValue = false;
+                                    _readAndParseJsonFile();
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ))
-                  .toList(),
+                  )
+                      .toList(),
+                ),
+              ),
             ),
+
+
+
+
+
+
+
+
             const SizedBox(
               height: 20,
             ),
@@ -831,153 +854,127 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemExtent: 132,
                   itemCount: information.length,
                   itemBuilder: (context, index) {
-                    final String name = information[index]['name'].toString();
-                    final String targetName =
-                    information[index]['target_name'].toString();
-                    final bool nameContainsQuery =
-                    name.toLowerCase().contains(searchQuery.toLowerCase());
-                    final bool targetNameContainsQuery = targetName
-                        .toLowerCase()
-                        .contains(searchQuery.toLowerCase());
-
-                    /* if (searchQuery.isNotEmpty &&
-                      !(nameContainsQuery || targetNameContainsQuery)) {
-                    return const SizedBox.shrink(); // прячем карточку
-                  }*/
                     int stateIndex = information[index]['state'];
                     final Color nowColor =
-                    colorChangingCircle.colors[stateIndex];
+                        colorChangingCircle.colors[stateIndex];
                     return Card(
                       elevation: 0,
                       margin: const EdgeInsets.all(0),
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border(
-                            bottom: BorderSide(color: Color(0xFFE3E3E3)),
+                            bottom: const BorderSide(color: Color(0xFFE3E3E3)),
                             left: BorderSide(
                               color: nowColor,
-                              width: 4,
+                              width: 6,
                             ),
                           ),
                         ),
                         child: ListTile(
-                          subtitle: Column(
+                          subtitle: Row(
                             children: [
-                              SizedBox(
-                                height: 6,
-                              ),
-                              Row(
+                              Column(
                                 children: [
-                                  const Column(
-                                    children: [
-                                      SizedBox(
-                                        width: 16,
-                                      )
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Container(
-                                          height: 16,
-                                          width: 16,
-                                          decoration: BoxDecoration(
-                                            color: nowColor,
-                                            borderRadius:
-                                            BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 1,
-                                        child: Column(
-                                          children: [
-                                            DashedLine(
-                                              color: nowColor,
-                                              height: 83,
-                                              dashWidth: 1.0,
-                                              dashSpace: 1.0,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Column(
-                                    children: [
-                                      SizedBox(
-                                        width: 8,
-                                      )
-                                    ],
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            CardName().settingNameToCard(
-                                                information[index]['state']),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: 'Roboto',
-                                              fontSize: 17,
-                                              color: Color(0xFF515357),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 8,
-                                          ),
-                                          Text(
-                                            information[index]['name']
-                                                .toString(),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontFamily: 'Roboto',
-                                              fontSize: 14,
-                                              color: Color(0xFF515357),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 4,
-                                          ),
-                                          Text(
-                                            information[index]['target_name']
-                                                .toString(),
-                                            maxLines: 3,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontFamily: 'Roboto',
-                                              fontSize: 14,
-                                              color: Color(0xFF93959A),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 12,
-                                          ),
-                                          Text(
-                                            CardName().getTimeText(
-                                              information[index]['time_value'],
-                                              selectedTimeRange,
-                                            ),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              fontFamily: 'Roboto',
-                                              fontSize: 14,
-                                              color: Color(0xFF515357),
-                                            ),
-                                          ),
-                                        ],
+                                  Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Container(
+                                      height: 16,
+                                      width: 16,
+                                      decoration: BoxDecoration(
+                                        color: nowColor,
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                   ),
+                                  SizedBox(
+                                    width: 1,
+                                    child: Column(
+                                      children: [
+                                        DashedLine(
+                                          color: nowColor,
+                                          height: 100,
+                                          dashWidth: 1.0,
+                                          dashSpace: 1.0,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
+                              ),
+                              const Column(
+                                children: [
+                                  SizedBox(
+                                    width: 8,
+                                  )
+                                ],
+                              ),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        CardName().settingNameToCard(
+                                            information[index]['state']),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: 'Roboto',
+                                          fontSize: 17,
+                                          color: Color(0xFF515357),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(0),
+                                        child: Text(
+                                          information[index]['name'].toString(),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontFamily: 'Roboto',
+                                            fontSize: 14,
+                                            color: Color(0xFF515357),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        information[index]['target_name']
+                                            .toString(),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Roboto',
+                                          fontSize: 14,
+                                          color: Color(0xFF93959A),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 12,
+                                      ),
+                                      Text(
+                                        CardName().getTimeText(
+                                          information[index]['time_value'],
+                                          selectedTimeRange,
+                                        ),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontFamily: 'Roboto',
+                                          fontSize: 14,
+                                          color: Color(0xFF515357),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -987,187 +984,389 @@ class _MyHomePageState extends State<MyHomePage> {
                               context: context,
                               builder: (BuildContext context) {
                                 return Dialog(
+                                  insetPadding: EdgeInsets.all(10),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: double.infinity,
                                     // Установка ширины контейнера равной ширине экрана
                                     child: SingleChildScrollView(
                                       child: Column(
                                         children: [
-                                          SizedBox(
+                                          const SizedBox(
                                             height: 6,
                                           ),
                                           Row(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 16,
                                               ),
-                                              Container(
-                                                height: 16,
-                                                width: 16,
-                                                decoration: BoxDecoration(
-                                                  color: nowColor,
-                                                  borderRadius:
-                                                  BorderRadius.circular(8),
-                                                ),
+                                              Column(
+                                                children: [
+                                                  Container(
+                                                    height: 16,
+                                                    width: 16,
+                                                    decoration: BoxDecoration(
+                                                      color: nowColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
+                                                    ),
+                                                  ),
+                                                  DashedLine(  //todo make dynamic height
+                                                      color: nowColor,
+                                                      height: 150)
+                                                ],
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 8,
                                               ),
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       CardName()
                                                           .settingNameToCard(
-                                                          information[index]
-                                                          ['state']),
+                                                              information[index]
+                                                                  ['state']),
                                                       style: const TextStyle(
                                                         fontWeight:
-                                                        FontWeight.w500,
+                                                            FontWeight.w500,
                                                         fontFamily: 'Roboto',
                                                         fontSize: 17,
                                                         color:
-                                                        Color(0xFF515357),
+                                                            Color(0xFF515357),
                                                       ),
                                                     ),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 8,
                                                     ),
-                                                    Text(
-                                                      information[index]['name']
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                        FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color:
-                                                        Color(0xFF515357),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
+                                                    Row(children: [
+                                                      const Text(
+                                                          "Имя устройства: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Flexible(
+                                                        child: Text(
+                                                          information[index]
+                                                                  ['name']
+                                                              .toString(),
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Color(
+                                                                0xFF515357),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ]),
+                                                    const SizedBox(
                                                       height: 4,
                                                     ),
-                                                    Text(
-                                                      information[index]
-                                                      ['target_name']
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                        FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color:
-                                                        Color(0xFF93959A),
+                                                    Row(children: [
+                                                      const Text(
+                                                          "Имя целевого объекта: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Flexible(
+                                                        child: InkWell(
+                                                          onTap: () =>
+                                                              showDialog(
+                                                                  //карточка подробной информации
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (BuildContext
+                                                                          context) {
+                                                                    return Dialog(
+                                                                      insetPadding:
+                                                                          const EdgeInsets.all(
+                                                                              10),
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(10.0),
+                                                                      ),
+                                                                      child: Container(
+                                                                          width: 150,
+                                                                          height: 150,
+                                                                          child: const Align(
+                                                                            alignment:
+                                                                                Alignment.center,
+                                                                            child:
+                                                                                Text('График'),
+                                                                          )),
+                                                                    );
+                                                                  }),
+                                                          child: Text(
+                                                            information[index][
+                                                                    'target_name']
+                                                                .toString(),
+                                                            style:
+                                                                const TextStyle(
+                                                              decoration:
+                                                                  TextDecoration
+                                                                      .underline,
+                                                              color:
+                                                                  Colors.blue,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              // color: Color(0xFF93959A),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const Text("IP-адрес: ",
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color:
+                                                                  Colors.black,
+                                                            )),
+                                                        Text(
+                                                            information[index]
+                                                                ['ip'],
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color: Color(
+                                                                  0xFF93959A),
+                                                            )),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      const Text(
+                                                          "Шаблон сигнала: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Text(
+                                                          information[index][
+                                                              'alert_template'],
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Color(
+                                                                0xFF93959A),
+                                                          )),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      const Text("Сигнал: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Text(
+                                                          information[index]
+                                                              ['subalert'],
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Color(
+                                                                0xFF93959A),
+                                                          )),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      const Text("Значение: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Flexible(
+                                                        child: Text(
+                                                            information[index]
+                                                                    ['value'] +
+                                                                information[
+                                                                        index]
+                                                                    ['units'],
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color: Color(
+                                                                  0xFF93959A),
+                                                            )),
                                                       ),
-                                                    ),
-                                                    SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Text(
-                                                        "IP-адрес:${information[index]['ip']}",
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                          FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 14,
-                                                          color:
-                                                          Color(0xFF93959A),
-                                                        )),
+                                                    ]),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
-                                                    Text(
-                                                        "Шаблон сигнала: ${information[index]['alert_template']}",
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                          FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 14,
-                                                          color:
-                                                          Color(0xFF93959A),
-                                                        )),
+                                                    Row(children: [
+                                                      const Text("Описание: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Flexible(
+                                                        child: Text(
+                                                            information[index]
+                                                                ['description'],
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color: Color(
+                                                                  0xFF93959A),
+                                                            )),
+                                                      )
+                                                    ]),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
-                                                    Text(
-                                                        "Сигнал: ${information[index]['subalert']}",
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                          FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 14,
-                                                          color:
-                                                          Color(0xFF93959A),
-                                                        )),
+                                                    Row(children: [
+                                                      const Text("Метка: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Text(
+                                                          information[index]
+                                                              ['label'],
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Color(
+                                                                0xFF93959A),
+                                                          )),
+                                                    ]),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
-                                                    Text(
-                                                        "Значение:${information[index]['value'] +
-                                                            information[index]['units']}",
+                                                    Row(children: [
+                                                      const Text("Время: ",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontFamily:
+                                                                'Roboto',
+                                                            fontSize: 16,
+                                                            color: Colors.black,
+                                                          )),
+                                                      Text(
+                                                        CardName().getTimeText(
+                                                          information[index]
+                                                              ['time_value'],
+                                                          selectedTimeRange,
+                                                        ),
                                                         style: const TextStyle(
                                                           fontWeight:
-                                                          FontWeight.w400,
+                                                              FontWeight.w400,
                                                           fontFamily: 'Roboto',
-                                                          fontSize: 14,
+                                                          fontSize: 16,
                                                           color:
-                                                          Color(0xFF93959A),
-                                                        )),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Text(
-                                                        "Описание:${information[index]['description']}",
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                          FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 14,
-                                                          color:
-                                                          Color(0xFF93959A),
-                                                        )),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Text(
-                                                        "Метка:${information[index]['label']}",
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                          FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 14,
-                                                          color:
-                                                          Color(0xFF93959A),
-                                                        )),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Text(
-                                                      CardName().getTimeText(
-                                                        information[index]
-                                                        ['time_value'],
-                                                        selectedTimeRange,
+                                                              Color(0xFF515357),
+                                                        ),
                                                       ),
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                        FontWeight.w400,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 14,
-                                                        color:
-                                                        Color(0xFF515357),
-                                                      ),
-                                                    ),
+                                                    ]),
                                                   ],
                                                 ),
                                               ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  IconButton(
+                                                    alignment:
+                                                        Alignment.topCenter,
+                                                    icon:
+                                                        const Icon(Icons.close),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              )
                                             ],
                                           ),
                                         ],
@@ -1292,6 +1491,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       icon: const Icon(Icons.keyboard_double_arrow_right),
                     ),
+                    Text('${configReader.recordsOnPage} из ${configReader.recordsOnPage*2}'),
+                    const SizedBox(width: 16,)
                   ],
                 ),
               ),
@@ -1365,17 +1566,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 }
-// todo ссылка открывает окно
 // todo стили
-// todo checkbox
 // todo разобраться со временем now()
-// todo дублирование элементов при фильтрации
-// todo json config глобальный, доступ из всего кода
 // todo анимация свайпвов
-// todo букавки побольше в доп инфе, отступы и выделение имени, а также пробел после :
-// поле поиска
-// отступ линии
-// расстояние до круглого
 // стили до конца недели
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
@@ -1384,3 +1577,12 @@ class _MyHomePageState extends State<MyHomePage> {
 * 3. target_name
 * 4. time-value
 * 5. label*/
+
+/*сделано:
+* 1. стили фильтров и убрал переполнение
+* 2. линии в меню фильтров
+* 3. расширенная инфа
+* 4. перенесен с3 на строку выше
+* 5. количество элементов вывод динамический
+* 6.
+* */

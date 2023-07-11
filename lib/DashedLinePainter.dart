@@ -28,5 +28,5 @@ class DashedLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(DashedLinePainter oldPainter) => false;
+  bool shouldRepaint(DashedLinePainter oldDelegate) => false;
 }
