@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:untitled/ConfigReader.dart';
 
 import 'CardName.dart';
@@ -60,8 +62,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late TextEditingController _controller; //Контроллер поле ввода номера страницы
-  ConfigReader configReader = ConfigReader();//Глобальные переменные
+  late TextEditingController
+      _controller; //Контроллер поле ввода номера страницы
+  ConfigReader configReader = ConfigReader(); //Глобальные переменные
   Timer? searchTimer; // Переменная для хранения таймера
   String searchQuery = ''; //Поле поиска по карточкам
   List information = []; //Список карточек из json
@@ -71,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
 
-  TimeRange selectedTimeRange = TimeRange.hour;//поле выбора временного фильтра
+  TimeRange selectedTimeRange = TimeRange.hour; //поле выбора временного фильтра
 //объявление индексов фильтров
   int blueFilterIndex = 0;
   int greenFilterIndex = 1;
@@ -87,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // список элементов фильтров
   late Map<Container, FilterData> filter;
+
   //список цветов
   ColorChangingCircle colorChangingCircle =
       const ColorChangingCircle(dataIndex: 0, colors: [
@@ -99,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Color(0xFFD9E2EC),
     Color(0xFF4285F4),
   ]);
+
   @override
   void initState() {
     super.initState();
@@ -502,336 +507,340 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     child: PopupMenuButton<String>(
-                      constraints: BoxConstraints.expand(width: 334, height: 200),
+                      constraints:
+                          const BoxConstraints.expand(width: 334, height: 200),
                       padding: EdgeInsets.zero,
                       //окно фильтрации
                       key: popupMenuKey,
-                      icon: const Icon(
+                      icon:
+                      hasTrueValue(filter)
+                          ? SvgPicture.asset(
+                        'assets/filter_add.svg',
+                        width: 24,
+                        height: 24,
+                      )
+                          : Icon(
                         Icons.filter_alt,
                         color: Color(0xFF93959A),
                       ),
-
                       itemBuilder: (BuildContext context) {
                         return [
-                          PopupMenuItem<String>(child: StatefulBuilder(builder:
-                              (BuildContext context, StateSetter setState) {
-
-                            return Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              blueFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          // Обновление состояния Checkbox
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  blueFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                          PopupMenuItem<String>(
+                            child: StatefulBuilder(builder:
+                                (BuildContext context, StateSetter setState) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                blueFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            // Обновление состояния Checkbox
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    blueFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                        popupMenuKey.currentState
-                                            ?.setState(() {});
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[blueFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              greenFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  greenFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                          popupMenuKey.currentState
+                                              ?.setState(() {});
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[blueFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                greenFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    greenFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[greenFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              yellowFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  yellowFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[greenFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                yellowFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    yellowFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[yellowFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                      filterData.intValue ==
-                                          redFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                          filterData.intValue ==
-                                              redFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[yellowFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                redFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    redFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[redFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              purpleFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  purpleFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[redFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                purpleFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    purpleFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[purpleFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              greyFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  greyFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[purpleFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                greyFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    greyFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[greyFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                      filterData.intValue ==
-                                          skyFilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                          filterData.intValue ==
-                                              skyFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[greyFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                skyFilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    skyFilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle
-                                          .colors[skyFilterIndex],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: const Color(0xFFE3E3E3),
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              c1FilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  c1FilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      Container(
+                                        color: colorChangingCircle
+                                            .colors[skyFilterIndex],
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    color: const Color(0xFFE3E3E3),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                c1FilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    c1FilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    const Text("C1"),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue ==
-                                              c2FilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  c2FilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      const Text("C1"),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                c2FilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    c2FilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    const Text('C2'),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                      filterData.intValue ==
-                                          c3FilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                          filterData.intValue ==
-                                              c3FilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      const Text('C2'),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                c3FilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    c3FilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
-                                      },
-                                    ),
-                                    const Text('C3'),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                      filterData.intValue ==
-                                          c4FilterIndex)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                          filterData.intValue ==
-                                              c4FilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
+                                        },
+                                      ),
+                                      const Text('C3'),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Checkbox(
+                                        value: filter.values
+                                            .firstWhere((filterData) =>
+                                                filterData.intValue ==
+                                                c4FilterIndex)
+                                            .booleanValue,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            filter.values
+                                                .where((filterData) =>
+                                                    filterData.intValue ==
+                                                    c4FilterIndex)
+                                                .forEach((filterData) {
+                                              filterData.booleanValue = value;
+                                            });
                                           });
-                                        });
+                                        },
+                                      ),
+                                      const Text('C4'),
+                                    ],
+                                  ),
+                                  Container(
+                                    height: 1,
+                                    color: Color(0xFFE3E3E3),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {
+                                        _readAndParseJsonFile();
+                                        try {
+                                          Navigator.pop(context);
+                                        } catch (e) {
+                                          log('$e');
+                                        }
                                       },
-                                    ),
-                                    const Text('C4'),
-                                  ],
-                                ),
-
-
-                                Container(
-                                  height: 1,
-                                  color: Color(0xFFE3E3E3),
-                                ),
-                                TextButton(
-                                    onPressed: () {
-                                      _readAndParseJsonFile();
-                                      try {
-                                        Navigator.pop(context);
-                                      } catch (e) {
-                                        log('$e');
-                                      }
-                                    },
-                                    child: const Text(
-                                      'Применить',
-                                      style: TextStyle(
-                                          fontFamily: 'Roboto',
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF515357)),
-                                    ))
-                              ],
-                            );
-                          }),
+                                      child: const Text(
+                                        'Применить',
+                                        style: TextStyle(
+                                            fontFamily: 'Roboto',
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF515357)),
+                                      ))
+                                ],
+                              );
+                            }),
                           ),
                         ];
                       },
@@ -917,7 +926,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         colorChangingCircle.colors[stateIndex];
                     return Card(
                       elevation: 0,
-                      color:  const Color(0xFFFFFFFF),
+                      color: const Color(0xFFFFFFFF),
                       shadowColor: Colors.transparent,
                       margin: const EdgeInsets.all(0),
                       child: Container(
@@ -1115,108 +1124,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       height: 8,
                                                     ),
                                                     Row(children: [
-                                                      const Text(
-                                                          "Имя устройства: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
                                                       Flexible(
-                                                        child: Text(
-                                                          information[index]
-                                                                  ['name']
-                                                              .toString(),
-                                                          style:
-                                                              const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Color(
-                                                                0xFF515357),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 4,
-                                                    ),
-                                                    Row(children: [
-                                                      const Text(
-                                                          "Имя целевого объекта: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
-                                                      Flexible(
-                                                        child: InkWell(
-                                                          onTap: () =>
-                                                              showDialog(
-                                                                  //карточка подробной информации
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (BuildContext
-                                                                          context) {
-                                                                    return Dialog(
-                                                                      insetPadding:
-                                                                          const EdgeInsets.all(
-                                                                              10),
-                                                                      shape:
-                                                                          RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(10.0),
-                                                                      ),
-                                                                      child: Container(
-                                                                          width: 150,
-                                                                          height: 150,
-                                                                          child: const Align(
-                                                                            alignment:
-                                                                                Alignment.center,
-                                                                            child:
-                                                                                Text('График'),
-                                                                          )),
-                                                                    );
-                                                                  }),
-                                                          child: Text(
-                                                            information[index][
-                                                                    'target_name']
-                                                                .toString(),
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text:
+                                                                "Имя устройства: ",
                                                             style:
                                                                 const TextStyle(
-                                                              decoration:
-                                                                  TextDecoration
-                                                                      .underline,
-                                                              color:
-                                                                  Colors.blue,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              // color: Color(0xFF93959A),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        const Text("IP-адрес: ",
-                                                            style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w400,
@@ -1225,10 +1139,39 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               fontSize: 16,
                                                               color:
                                                                   Colors.black,
-                                                            )),
-                                                        Text(
-                                                            information[index]
-                                                                ['ip'],
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                            index]
+                                                                        ['name']
+                                                                    .toString(),
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 4,
+                                                    ),
+                                                    Row(children: [
+                                                      Flexible(
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text:
+                                                                "Имя целевого объекта: ",
                                                             style:
                                                                 const TextStyle(
                                                               fontWeight:
@@ -1237,86 +1180,120 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               fontFamily:
                                                                   'Roboto',
                                                               fontSize: 16,
-                                                              color: Color(
-                                                                  0xFF93959A),
-                                                            )),
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                            index]
+                                                                        [
+                                                                        'target_name']
+                                                                    .toString(),
+                                                                style:
+                                                                    const TextStyle(
+                                                                  decoration:
+                                                                      TextDecoration
+                                                                          .underline,
+                                                                  color: Colors
+                                                                      .blue,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  // color: Color(0xFF93959A),
+                                                                ),
+                                                                recognizer:
+                                                                    TapGestureRecognizer()
+                                                                      ..onTap =
+                                                                          () {
+                                                                        showDialog(
+                                                                            //карточка подробной информации
+                                                                            context:
+                                                                                context,
+                                                                            builder:
+                                                                                (BuildContext context) {
+                                                                              return Dialog(
+                                                                                  insetPadding: const EdgeInsets.all(10),
+                                                                                  shape: RoundedRectangleBorder(
+                                                                                    borderRadius: BorderRadius.circular(10.0),
+                                                                                  ),
+                                                                                  child: SizedBox(
+                                                                                    width: double.infinity,
+                                                                                    height: double.infinity,
+                                                                                    // Установка ширины контейнера равной ширине экрана
+                                                                                    child: Container(
+                                                                                        width: 150,
+                                                                                        height: 150,
+                                                                                        child: const Align(
+                                                                                          alignment: Alignment.center,
+                                                                                          child: Text('График'),
+                                                                                        )),
+                                                                                  ));
+                                                                            });
+                                                                      },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Flexible(
+                                                          child: RichText(
+                                                            text: TextSpan(
+                                                              text:
+                                                                  "IP-адрес: ",
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                fontFamily:
+                                                                    'Roboto',
+                                                                fontSize: 16,
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                              children: <TextSpan>[
+                                                                TextSpan(
+                                                                  text: information[
+                                                                          index]
+                                                                      ['ip'],
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400,
+                                                                    fontFamily:
+                                                                        'Roboto',
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: Color(
+                                                                        0xFF515357),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ],
                                                     ),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
                                                     Row(children: [
-                                                      const Text(
-                                                          "Шаблон сигнала: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
-                                                      Text(
-                                                          information[index][
-                                                              'alert_template'],
-                                                          style:
-                                                              const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Color(
-                                                                0xFF93959A),
-                                                          )),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      const Text("Сигнал: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
-                                                      Text(
-                                                          information[index]
-                                                              ['subalert'],
-                                                          style:
-                                                              const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Color(
-                                                                0xFF93959A),
-                                                          )),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      const Text("Значение: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
                                                       Flexible(
-                                                        child: Text(
-                                                            information[index]
-                                                                    ['value'] +
-                                                                information[
-                                                                        index]
-                                                                    ['units'],
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text:
+                                                                "Шаблон сигнала: ",
                                                             style:
                                                                 const TextStyle(
                                                               fontWeight:
@@ -1325,28 +1302,39 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               fontFamily:
                                                                   'Roboto',
                                                               fontSize: 16,
-                                                              color: Color(
-                                                                  0xFF93959A),
-                                                            )),
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                        index][
+                                                                    'alert_template'],
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ),
                                                     ]),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
                                                     Row(children: [
-                                                      const Text("Описание: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
                                                       Flexible(
-                                                        child: Text(
-                                                            information[index]
-                                                                ['description'],
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text: "Сигнал: ",
                                                             style:
                                                                 const TextStyle(
                                                               fontWeight:
@@ -1355,27 +1343,166 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               fontFamily:
                                                                   'Roboto',
                                                               fontSize: 16,
-                                                              color: Color(
-                                                                  0xFF93959A),
-                                                            )),
-                                                      )
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                        index][
+                                                                    'subalert'],
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ]),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
                                                     Row(children: [
-                                                      const Text("Метка: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          )),
-                                                      Text(
-                                                          information[index]
-                                                              ['label'],
+                                                      Flexible(
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text: "Значение: ",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                            index]
+                                                                        [
+                                                                        'value'] +
+                                                                    information[
+                                                                            index]
+                                                                        [
+                                                                        'units'],
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      Flexible(
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text: "Описание: ",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                        index][
+                                                                    'description'],
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      Flexible(
+                                                        child: RichText(
+                                                          text: TextSpan(
+                                                            text: "Метка: ",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400,
+                                                              fontFamily:
+                                                                  'Roboto',
+                                                              fontSize: 16,
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                            children: <TextSpan>[
+                                                              TextSpan(
+                                                                text: information[
+                                                                        index]
+                                                                    ['label'],
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontFamily:
+                                                                      'Roboto',
+                                                                  fontSize: 16,
+                                                                  color: Color(
+                                                                      0xFF515357),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]),
+                                                    const SizedBox(
+                                                      height: 12,
+                                                    ),
+                                                    Row(children: [
+                                                      RichText(
+                                                        text: TextSpan(
+                                                          text: "Время: ",
                                                           style:
                                                               const TextStyle(
                                                             fontWeight:
@@ -1383,36 +1510,30 @@ class _MyHomePageState extends State<MyHomePage> {
                                                             fontFamily:
                                                                 'Roboto',
                                                             fontSize: 16,
-                                                            color: Color(
-                                                                0xFF93959A),
-                                                          )),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      const Text("Время: ",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
                                                             color: Colors.black,
-                                                          )),
-                                                      Text(
-                                                        CardName().getTimeText(
-                                                          information[index]
-                                                              ['time_value'],
-                                                          selectedTimeRange,
-                                                        ),
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontFamily: 'Roboto',
-                                                          fontSize: 16,
-                                                          color:
-                                                              Color(0xFF515357),
+                                                          ),
+                                                          children: <TextSpan>[
+                                                            TextSpan(
+                                                              text: CardName()
+                                                                  .getTimeText(
+                                                                information[
+                                                                        index][
+                                                                    'time_value'],
+                                                                selectedTimeRange,
+                                                              ),
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                fontFamily:
+                                                                    'Roboto',
+                                                                fontSize: 16,
+                                                                color: Color(
+                                                                    0xFF515357),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ]),
@@ -1458,134 +1579,132 @@ class _MyHomePageState extends State<MyHomePage> {
             //Поле навигации
             Align(
               alignment: Alignment.bottomCenter,
-
-                child: Row(
-                  /*direction: Axis.horizontal,
-                crossAxisAlignment:WrapCrossAlignment.center ,*/
-                  mainAxisSize: MainAxisSize.max, // занимаем всю ширину экрана
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                 // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      constraints: BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          selectedPage = 1;
-                        });
-                        _readAndParseJsonFile();
-                        _controller.text = selectedPage.toString();
-                      },
-                      icon: const Icon(Icons.keyboard_double_arrow_left),
+              child: Row(
+                mainAxisSize: MainAxisSize.max, // занимаем всю ширину экрана
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    constraints: BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        selectedPage = 1;
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.keyboard_double_arrow_left),
+                  ),
+                  IconButton(
+                    constraints: BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        if (selectedPage != 1) {
+                          selectedPage -= 1;
+                        }
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  const Text(
+                    'Страница:',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
                     ),
-                    IconButton(
-                      constraints: BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          if (selectedPage != 1) {
-                            selectedPage -= 1;
-                          }
-                        });
-                        _readAndParseJsonFile();
-                        _controller.text = selectedPage.toString();
-                      },
-                      icon: const Icon(Icons.chevron_left),
-                    ),
-                    const Text(
-                      'Страница:',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox( // Используем SizedBox для установки ширины TextField
-                      width: 20,
-                        child: TextField(
-                          minLines: 1, // Устанавливаем минимальное количество строк
-                          maxLines: null,
-                          controller: _controller,
-                          onChanged: _validateInput,
-                          onSubmitted: _onSubmitted,
-                          style: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          keyboardType: TextInputType.number,
-                          textAlignVertical: TextAlignVertical.top,
-                          decoration: InputDecoration(
-                            focusedErrorBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.red),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: _isValid
-                                  ? const BorderSide(color: Colors.grey)
-                                  : const BorderSide(color: Colors.red),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: _isValid
-                                  ? const BorderSide(color: Colors.blue)
-                                  : const BorderSide(color: Colors.red),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 5), // Установка вертикального padding
-                          ),
-                        ),
-
-
-                    ),
-                    const Text(
-                      ' из ',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      countOfPages.toString(),
+                  ),
+                  SizedBox(
+                    // Используем SizedBox для установки ширины TextField
+                    width: 20,
+                    height: 40,
+                    child: TextField(
+                      minLines: 1,
+                      // Устанавливаем минимальное количество строк
+                      maxLines: 1,
+                      controller: _controller,
+                      onChanged: _validateInput,
+                      onSubmitted: _onSubmitted,
                       style: const TextStyle(
-                        fontSize: 15,
                         fontFamily: 'Roboto',
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
+                      keyboardType: TextInputType.number,
+                      textAlignVertical: TextAlignVertical.top,
+                      decoration: InputDecoration(
+                        focusedErrorBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: _isValid
+                              ? const BorderSide(color: Colors.grey)
+                              : const BorderSide(color: Colors.red),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: _isValid
+                              ? const BorderSide(color: Colors.blue)
+                              : const BorderSide(color: Colors.red),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 5), // Установка вертикального padding
+                      ),
                     ),
-                    IconButton(
-                      constraints: BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          if (selectedPage != countOfPages) {
-                            selectedPage += 1;
-                          }
-                        });
-                        _readAndParseJsonFile();
-                        _controller.text = selectedPage.toString();
-                      },
-                      icon: const Icon(Icons.chevron_right),
+                  ),
+                  const Text(
+                    ' из ',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
                     ),
-                    IconButton(
-                      constraints: BoxConstraints(),
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        setState(() {
-                          selectedPage = countOfPages;
-                        });
-                        _readAndParseJsonFile();
-                        _controller.text = selectedPage.toString();
-                      },
-                      icon: const Icon(Icons.keyboard_double_arrow_right),
+                  ),
+                  Text(
+                    countOfPages.toString(),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
                     ),
-                    Text('${configReader.recordsOnPage} из 30000'),
-                    const SizedBox(
+                  ),
+                  IconButton(
+                    constraints: BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        if (selectedPage != countOfPages) {
+                          selectedPage += 1;
+                        }
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                  IconButton(
+                    constraints: BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        selectedPage = countOfPages;
+                      });
+                      _readAndParseJsonFile();
+                      _controller.text = selectedPage.toString();
+                    },
+                    icon: const Icon(Icons.keyboard_double_arrow_right),
+                  ),
+                  Text('${configReader.recordsOnPage} из 30000'),
+                  /*const SizedBox(
                       width: 16,
-                    )
-                  ],
-                ),
-
+                    )*/
+                ],
+              ),
             ),
-
           ],
         ),
       ),
@@ -1652,11 +1771,18 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
   }
+  bool hasTrueValue(Map<Container, FilterData> filter) {
+    for (final filterData in filter.values) {
+      if (filterData.booleanValue == true) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
-// todo разобраться со временем now()
-// todo анимация свайпвов?
-// стили до конца недели
 
+// todo разобраться со временем now()
+// стили до конца недели
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
@@ -1664,13 +1790,3 @@ class _MyHomePageState extends State<MyHomePage> {
 * 3. target_name
 * 4. time-value
 * 5. label*/
-
-
-/*сделано:
-* 1. стили фильтров и убрал переполнение
-* 2. линии в меню фильтров
-* 3. расширенная инфа
-* 4. перенесен с3 на строку выше
-* 5. количество элементов вывод динамический
-* 6.
-* */
