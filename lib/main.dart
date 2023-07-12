@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:untitled/ConfigReader.dart';
 
@@ -17,6 +18,7 @@ enum TimeRange {
 }
 
 void main() {
+  //debugPaintSizeEnabled = true; // включаем режим отладки
   runApp(const MyApp());
 }
 
@@ -29,7 +31,7 @@ class MyApp extends StatelessWidget {
       title: 'My App',
       theme: ThemeData(
         primarySwatch: const MaterialColor(
-          0xFFDEDEDE,
+          0xFFFFFFFF,
           <int, Color>{
             50: Color(0xFFEAEAEA),
             100: Color(0xFFD4D4D4),
@@ -43,6 +45,7 @@ class MyApp extends StatelessWidget {
             900: Color(0xFF242424),
           },
         ),
+        primaryColor: const Color(0xFFFFFFFF),
       ),
       home: const MyHomePage(),
     );
@@ -57,109 +60,34 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late TextEditingController _controller;
-  ConfigReader configReader = ConfigReader();
+  late TextEditingController _controller; //Контроллер поле ввода номера страницы
+  ConfigReader configReader = ConfigReader();//Глобальные переменные
   Timer? searchTimer; // Переменная для хранения таймера
-  String searchQuery = '';
-  List information = [];
+  String searchQuery = ''; //Поле поиска по карточкам
+  List information = []; //Список карточек из json
   String firstPage = 'assets/1.txt';
   String secondPage = 'assets/2.txt';
   int selectedPage = 1;
   bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
-  List<Color> myColors = [
-    Color(0xFF4285F4),
-    Color(0xFF38C25D),
-    Color(0xFFFFCA31),
-    Color(0xFFEA4335),
-    Color(0xFFAD2C72),
-    Color(0xFF858B99),
-    Color(0xFFD9E2EC),
-    Color(0xFF4285F4)
-  ];
-  TimeRange selectedTimeRange = TimeRange.hour;
-  Map<Container, FilterData> filter = {
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFF4285F4),
-      ),
-    ): FilterData(false, 0),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFF38C25D),
-      ),
-    ): FilterData(false, 1),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFFFFCA31),
-      ),
-    ): FilterData(false, 2),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFFEA4335),
-      ),
-    ): FilterData(false, 3),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFFAD2C72),
-      ),
-    ): FilterData(false, 4),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-        color: const Color(0xFF858B99),
-      ),
-    ): FilterData(false, 5),
-    Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      height: 24,
-      width: 24,
-      child: const Text('C1'),
-    ): FilterData(false, 6),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: const Text('C2'),
-    ): FilterData(false, 7),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: const Text('C3'),
-    ): FilterData(false, 8),
-    Container(
-      height: 24,
-      width: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: const Text('C4'),
-    ): FilterData(false, 9),
-  };
+
+  TimeRange selectedTimeRange = TimeRange.hour;//поле выбора временного фильтра
+//объявление индексов фильтров
+  int blueFilterIndex = 0;
+  int greenFilterIndex = 1;
+  int yellowFilterIndex = 2;
+  int redFilterIndex = 3;
+  int purpleFilterIndex = 4;
+  int greyFilterIndex = 5;
+  int skyFilterIndex = 6;
+  int c1FilterIndex = 7;
+  int c2FilterIndex = 8;
+  int c3FilterIndex = 9;
+  int c4FilterIndex = 10;
+
+  // список элементов фильтров
+  late Map<Container, FilterData> filter;
+  //список цветов
   ColorChangingCircle colorChangingCircle =
       const ColorChangingCircle(dataIndex: 0, colors: [
     Color(0xFF4285F4),
@@ -171,14 +99,102 @@ class _MyHomePageState extends State<MyHomePage> {
     Color(0xFFD9E2EC),
     Color(0xFF4285F4),
   ]);
-
   @override
   void initState() {
     super.initState();
     _readAndParseJsonFile();
     configReader.readAndParseConfig();
-
     _controller = TextEditingController(text: selectedPage.toString());
+    filter = {
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[blueFilterIndex],
+        ),
+      ): FilterData(false, 0),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[greenFilterIndex],
+        ),
+      ): FilterData(false, 1),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[yellowFilterIndex],
+        ),
+      ): FilterData(false, 2),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[redFilterIndex],
+        ),
+      ): FilterData(false, 3),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[purpleFilterIndex],
+        ),
+      ): FilterData(false, 4),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[greyFilterIndex],
+        ),
+      ): FilterData(false, 5),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: colorChangingCircle.colors[skyFilterIndex],
+        ),
+      ): FilterData(false, 6),
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        height: 24,
+        width: 24,
+        child: const Text('C1'),
+      ): FilterData(false, 7),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: const Text('C2'),
+      ): FilterData(false, 8),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: const Text('C3'),
+      ): FilterData(false, 9),
+      Container(
+        height: 24,
+        width: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: const Text('C4'),
+      ): FilterData(false, 10),
+    };
   }
 
   Future<void> _readAndParseJsonFile() async {
@@ -241,17 +257,17 @@ class _MyHomePageState extends State<MyHomePage> {
             for (int j = 0; j < filter.length; j++) {
               if (filter.values.elementAt(j).booleanValue == true) {
                 counter++;
-                if (j < 6) {
+                if (j <= skyFilterIndex) {
                   if (element['state'] == j) {
                     colorFilter.add(element);
-                    if (j == 0) {
+                    if (j == blueFilterIndex) {
                       colorFilter += filteredInformation
                           .where((info) => info['state'] == 7)
                           .toList();
                     }
                     break;
                   }
-                } else if (5 < j && j < 10) {
+                } else if (c1FilterIndex <= j && j <= c4FilterIndex) {
                   if (element['label'] == indexIntoLabel(j)) {
                     colorFilter.add(element);
                     break;
@@ -302,13 +318,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String indexIntoLabel(int index) {
     switch (index) {
-      case 6:
-        return 'C1';
       case 7:
-        return 'C2';
+        return 'C1';
       case 8:
-        return 'C3';
+        return 'C2';
       case 9:
+        return 'C3';
+      case 10:
         return 'C4';
       default:
         log('вышли за пределы индексации');
@@ -432,6 +448,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 32,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4.0),
+                        color: const Color(0xFFFFFFFF),
                         border: Border.all(
                           color: const Color(0xFFE3E3E3),
                           width: 1.0,
@@ -485,6 +502,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     child: PopupMenuButton<String>(
+                      constraints: BoxConstraints.expand(width: 334, height: 200),
                       padding: EdgeInsets.zero,
                       //окно фильтрации
                       key: popupMenuKey,
@@ -497,6 +515,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         return [
                           PopupMenuItem<String>(child: StatefulBuilder(builder:
                               (BuildContext context, StateSetter setState) {
+
                             return Column(
                               children: [
                                 Row(
@@ -504,14 +523,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 0)
+                                              filterData.intValue ==
+                                              blueFilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           // Обновление состояния Checkbox
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 0)
+                                                  filterData.intValue ==
+                                                  blueFilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -521,7 +542,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     Container(
-                                      color: colorChangingCircle.colors[0],
+                                      color: colorChangingCircle
+                                          .colors[blueFilterIndex],
                                       width: 16,
                                       height: 16,
                                     ),
@@ -531,13 +553,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 1)
+                                              filterData.intValue ==
+                                              greenFilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 1)
+                                                  filterData.intValue ==
+                                                  greenFilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -545,7 +569,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     Container(
-                                      color: colorChangingCircle.colors[1],
+                                      color: colorChangingCircle
+                                          .colors[greenFilterIndex],
                                       width: 16,
                                       height: 16,
                                     ),
@@ -555,13 +580,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 2)
+                                              filterData.intValue ==
+                                              yellowFilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 2)
+                                                  filterData.intValue ==
+                                                  yellowFilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -569,7 +596,118 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     Container(
-                                      color: colorChangingCircle.colors[2],
+                                      color: colorChangingCircle
+                                          .colors[yellowFilterIndex],
+                                      width: 16,
+                                      height: 16,
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Checkbox(
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue ==
+                                          redFilterIndex)
+                                          .booleanValue,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                          filterData.intValue ==
+                                              redFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
+                                        });
+                                      },
+                                    ),
+                                    Container(
+                                      color: colorChangingCircle
+                                          .colors[redFilterIndex],
+                                      width: 16,
+                                      height: 16,
+                                    ),
+
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                              filterData.intValue ==
+                                              purpleFilterIndex)
+                                          .booleanValue,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                                  filterData.intValue ==
+                                                  purpleFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
+                                        });
+                                      },
+                                    ),
+                                    Container(
+                                      color: colorChangingCircle
+                                          .colors[purpleFilterIndex],
+                                      width: 16,
+                                      height: 16,
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Checkbox(
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                              filterData.intValue ==
+                                              greyFilterIndex)
+                                          .booleanValue,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                                  filterData.intValue ==
+                                                  greyFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
+                                        });
+                                      },
+                                    ),
+                                    Container(
+                                      color: colorChangingCircle
+                                          .colors[greyFilterIndex],
+                                      width: 16,
+                                      height: 16,
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Checkbox(
+                                      value: filter.values
+                                          .firstWhere((filterData) =>
+                                      filterData.intValue ==
+                                          skyFilterIndex)
+                                          .booleanValue,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                          filterData.intValue ==
+                                              skyFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = value;
+                                          });
+                                        });
+                                      },
+                                    ),
+                                    Container(
+                                      color: colorChangingCircle
+                                          .colors[skyFilterIndex],
                                       width: 16,
                                       height: 16,
                                     ),
@@ -577,97 +715,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                                 Container(
                                   height: 1,
-                                  color: Color(0xFFE3E3E3),
+                                  color: const Color(0xFFE3E3E3),
                                 ),
                                 Row(
                                   children: [
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 3)
+                                              filterData.intValue ==
+                                              c1FilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 3)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
-                                          });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle.colors[3],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue == 4)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue == 4)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
-                                          });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle.colors[4],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue == 5)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue == 5)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = value;
-                                          });
-                                        });
-                                      },
-                                    ),
-                                    Container(
-                                      color: colorChangingCircle.colors[5],
-                                      width: 16,
-                                      height: 16,
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Color(0xFFE3E3E3),
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: filter.values
-                                          .firstWhere((filterData) =>
-                                              filterData.intValue == 6)
-                                          .booleanValue,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue == 6)
+                                                  filterData.intValue ==
+                                                  c1FilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -681,13 +744,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 7)
+                                              filterData.intValue ==
+                                              c2FilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 7)
+                                                  filterData.intValue ==
+                                                  c2FilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -701,13 +766,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                      filterData.intValue == 8)
+                                      filterData.intValue ==
+                                          c3FilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                          filterData.intValue == 8)
+                                          filterData.intValue ==
+                                              c3FilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -715,24 +782,21 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     const Text('C3'),
-                                  ],
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Color(0xFFE3E3E3),
-                                ),
-                                Row(
-                                  children: [
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
                                     Checkbox(
                                       value: filter.values
                                           .firstWhere((filterData) =>
-                                              filterData.intValue == 9)
+                                      filterData.intValue ==
+                                          c4FilterIndex)
                                           .booleanValue,
                                       onChanged: (bool? value) {
                                         setState(() {
                                           filter.values
                                               .where((filterData) =>
-                                                  filterData.intValue == 9)
+                                          filterData.intValue ==
+                                              c4FilterIndex)
                                               .forEach((filterData) {
                                             filterData.booleanValue = value;
                                           });
@@ -742,6 +806,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     const Text('C4'),
                                   ],
                                 ),
+
+
                                 Container(
                                   height: 1,
                                   color: Color(0xFFE3E3E3),
@@ -756,7 +822,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       }
                                     },
                                     child: const Text(
-                                      'применить',
+                                      'Применить',
                                       style: TextStyle(
                                           fontFamily: 'Roboto',
                                           fontSize: 15,
@@ -765,12 +831,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ))
                               ],
                             );
-                          })),
+                          }),
+                          ),
                         ];
                       },
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 16,
                   ),
                 ],
@@ -779,7 +846,6 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 8,
             ),
-
             Padding(
               padding: const EdgeInsets.only(left: 16),
               child: Container(
@@ -792,58 +858,50 @@ class _MyHomePageState extends State<MyHomePage> {
                       .where((entry) => entry.value.booleanValue == true)
                       .map(
                         (entry) => Material(
-                      elevation: 4.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            entry.value.booleanValue = false;
-                            _readAndParseJsonFile();
-                          });
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: entry.key,
+                          elevation: 4.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                entry.value.booleanValue = false;
+                                _readAndParseJsonFile();
+                              });
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: entry.key,
+                                ),
+                                const SizedBox(width: 4),
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    iconSize: 24,
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () {
+                                      setState(() {
+                                        entry.value.booleanValue = false;
+                                        _readAndParseJsonFile();
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                iconSize: 24,
-                                icon: const Icon(Icons.close),
-                                onPressed: () {
-                                  setState(() {
-                                    entry.value.booleanValue = false;
-                                    _readAndParseJsonFile();
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  )
+                      )
                       .toList(),
                 ),
               ),
             ),
-
-
-
-
-
-
-
-
             const SizedBox(
               height: 20,
             ),
@@ -859,9 +917,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         colorChangingCircle.colors[stateIndex];
                     return Card(
                       elevation: 0,
+                      color:  const Color(0xFFFFFFFF),
+                      shadowColor: Colors.transparent,
                       margin: const EdgeInsets.all(0),
                       child: Container(
                         decoration: BoxDecoration(
+                          color: const Color(0xFFFFFFFF),
                           border: Border(
                             bottom: const BorderSide(color: Color(0xFFE3E3E3)),
                             left: BorderSide(
@@ -984,7 +1045,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               context: context,
                               builder: (BuildContext context) {
                                 return Dialog(
-                                  insetPadding: EdgeInsets.all(10),
+                                  insetPadding: const EdgeInsets.all(10),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
@@ -1006,6 +1067,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                               ),
                                               Column(
                                                 children: [
+                                                  const SizedBox(
+                                                    height: 16,
+                                                  ),
                                                   Container(
                                                     height: 16,
                                                     width: 16,
@@ -1016,7 +1080,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               8),
                                                     ),
                                                   ),
-                                                  DashedLine(  //todo make dynamic height
+                                                  DashedLine(
+                                                      //todo make dynamic height
                                                       color: nowColor,
                                                       height: 150)
                                                 ],
@@ -1029,6 +1094,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
+                                                    const SizedBox(
+                                                      height: 16,
+                                                    ),
                                                     Text(
                                                       CardName()
                                                           .settingNameToCard(
@@ -1348,6 +1416,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                                         ),
                                                       ),
                                                     ]),
+                                                    const SizedBox(
+                                                      height: 16,
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -1384,14 +1455,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+            //Поле навигации
             Align(
               alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: 50,
+
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  /*direction: Axis.horizontal,
+                crossAxisAlignment:WrapCrossAlignment.center ,*/
+                  mainAxisSize: MainAxisSize.max, // занимаем всю ширину экрана
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                 // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
+                      constraints: BoxConstraints(),
+                      padding: EdgeInsets.zero,
                       onPressed: () {
                         setState(() {
                           selectedPage = 1;
@@ -1402,6 +1479,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(Icons.keyboard_double_arrow_left),
                     ),
                     IconButton(
+                      constraints: BoxConstraints(),
+                      padding: EdgeInsets.zero,
                       onPressed: () {
                         setState(() {
                           if (selectedPage != 1) {
@@ -1421,39 +1500,43 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(
-                      width: 40,
-                      child: TextField(
-                        controller: _controller,
-                        onChanged: _validateInput,
-                        onSubmitted: _onSubmitted,
-                        // Обработка события "Готово"
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                    SizedBox( // Используем SizedBox для установки ширины TextField
+                      width: 20,
+                        child: TextField(
+                          minLines: 1, // Устанавливаем минимальное количество строк
+                          maxLines: null,
+                          controller: _controller,
+                          onChanged: _validateInput,
+                          onSubmitted: _onSubmitted,
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          keyboardType: TextInputType.number,
+                          textAlignVertical: TextAlignVertical.top,
+                          decoration: InputDecoration(
+                            focusedErrorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: _isValid
+                                  ? const BorderSide(color: Colors.grey)
+                                  : const BorderSide(color: Colors.red),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: _isValid
+                                  ? const BorderSide(color: Colors.blue)
+                                  : const BorderSide(color: Colors.red),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 5), // Установка вертикального padding
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          focusedErrorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: _isValid
-                                ? const BorderSide(color: Colors.grey)
-                                : const BorderSide(color: Colors.red),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: _isValid
-                                ? const BorderSide(color: Colors.blue)
-                                : const BorderSide(color: Colors.red),
-                          ),
-                        ),
-                      ),
-                    ),
 
+
+                    ),
                     const Text(
-                      'из',
+                      ' из ',
                       style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'Roboto',
@@ -1468,8 +1551,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    // Просто пример, заменить на ответ сервера о количестве страниц
                     IconButton(
+                      constraints: BoxConstraints(),
+                      padding: EdgeInsets.zero,
                       onPressed: () {
                         setState(() {
                           if (selectedPage != countOfPages) {
@@ -1482,6 +1566,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: const Icon(Icons.chevron_right),
                     ),
                     IconButton(
+                      constraints: BoxConstraints(),
+                      padding: EdgeInsets.zero,
                       onPressed: () {
                         setState(() {
                           selectedPage = countOfPages;
@@ -1491,12 +1577,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       icon: const Icon(Icons.keyboard_double_arrow_right),
                     ),
-                    Text('${configReader.recordsOnPage} из ${configReader.recordsOnPage*2}'),
-                    const SizedBox(width: 16,)
+                    Text('${configReader.recordsOnPage} из 30000'),
+                    const SizedBox(
+                      width: 16,
+                    )
                   ],
                 ),
-              ),
+
             ),
+
           ],
         ),
       ),
@@ -1505,7 +1594,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _validateInput(String value) {
     setState(() {
-      // Проверьте условие на основе вашего диапазона значений
       if (value.isNotEmpty &&
           int.tryParse(value) != null &&
           int.parse(value) > 0 &&
@@ -1527,7 +1615,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // Обработка значения, когда пользователь нажимает клавишу "Готово" на клавиатуре
     // Можно выполнить дополнительную обработку или переход на другую страницу
     setState(() {
-      // Проверьте условие на основе вашего диапазона значений
       if (value.isNotEmpty &&
           int.tryParse(value) != null &&
           int.parse(value) >= 0 &&
@@ -1566,10 +1653,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 }
-// todo стили
 // todo разобраться со временем now()
-// todo анимация свайпвов
+// todo анимация свайпвов?
 // стили до конца недели
+
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state
@@ -1577,6 +1664,7 @@ class _MyHomePageState extends State<MyHomePage> {
 * 3. target_name
 * 4. time-value
 * 5. label*/
+
 
 /*сделано:
 * 1. стили фильтров и убрал переполнение
