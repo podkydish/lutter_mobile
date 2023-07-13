@@ -7,11 +7,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:untitled/ConfigReader.dart';
+import 'package:untitled/text_styles.dart';
 
 import 'CardName.dart';
 import 'ColorChangingCircle.dart';
 import 'DashedLine.dart';
 import 'FilterData.dart';
+import 'PopUpMenuChecks.dart';
 
 enum TimeRange {
   hour,
@@ -20,7 +22,7 @@ enum TimeRange {
 }
 
 void main() {
-  //debugPaintSizeEnabled = true; // включаем режим отладки
+  //debugPaintSizeEnabled = true; // режим отладки
   runApp(const MyApp());
 }
 
@@ -287,27 +289,23 @@ class _MyHomePageState extends State<MyHomePage> {
             colorFilter = filteredInformation;
           }
           for (int i = 0; i < colorFilter.length; i++) {
-            if (colorFilter[i]['name']
-                .toLowerCase()
-                .contains(searchQuery.toLowerCase())) {
-              searchFilter.add(colorFilter[i]);
-              searchCounter++;
-            } else if (colorFilter[i]['target_name']
-                .toLowerCase()
-                .contains(searchQuery.toLowerCase())) {
+            String name = colorFilter[i]['name'].toLowerCase();
+            String targetName = colorFilter[i]['target_name'].toLowerCase();
+            String query = searchQuery.toLowerCase();
+            if (name.contains(query) || targetName.contains(query)) {
               searchFilter.add(colorFilter[i]);
               searchCounter++;
             }
           }
         }
         setState(() {
-          if (counter != 0) {
-            information = colorFilter.take(configReader.recordsOnPage).toList();
-          } else if (searchCounter != 0 && searchFilter.isNotEmpty) {
+          if (searchQuery.isNotEmpty && searchFilter.isEmpty) {
+            information = [];
+          } else if (searchFilter.isNotEmpty) {
             information =
                 searchFilter.take(configReader.recordsOnPage).toList();
-          } else if (searchCounter != 0 && searchFilter.isEmpty) {
-            information = [];
+          } else if (counter != 0) {
+            information = colorFilter.take(configReader.recordsOnPage).toList();
           } else {
             information =
                 filteredInformation.take(configReader.recordsOnPage).toList();
@@ -342,6 +340,7 @@ class _MyHomePageState extends State<MyHomePage> {
     GlobalKey popupMenuKey = GlobalKey();
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -370,11 +369,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           foregroundColor: selectedTimeRange == TimeRange.hour
                               ? const Color(0xFFF0F1F2)
                               : const Color(0xFF93959A),
-                          textStyle: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          textStyle: AppTextStyles.defaultTextStyle,
                         ),
                         child: const Text('Час'),
                       ),
@@ -398,11 +393,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           foregroundColor: selectedTimeRange == TimeRange.today
                               ? const Color(0xFFF0F1F2)
                               : const Color(0xFF93959A),
-                          textStyle: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          textStyle: AppTextStyles.defaultTextStyle,
                         ),
                         child: const Text('Сегодня'),
                       ),
@@ -429,11 +420,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             elevation: selectedTimeRange == TimeRange.yesterday
                                 ? 2.0
                                 : 0.0,
-                            textStyle: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            )),
+                            textStyle: AppTextStyles.defaultTextStyle),
                         child: const Text('Вчера'),
                       ),
                     ),
@@ -442,7 +429,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(0.0),
+              padding: const EdgeInsets.all(0),
               child: Row(
                 children: [
                   const SizedBox(
@@ -507,61 +494,57 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     child: PopupMenuButton<String>(
-                      constraints:
-                          const BoxConstraints.expand(width: 334, height: 200),
+                      onCanceled: () {
+                        _readAndParseJsonFile();
+                      },
+                      constraints: const BoxConstraints.expand(width: 334, height: 230),
                       padding: EdgeInsets.zero,
-                      //окно фильтрации
                       key: popupMenuKey,
-                      icon:
-                      hasTrueValue(filter)
+                      icon: hasTrueValue(filter)
                           ? SvgPicture.asset(
                         'assets/filter_add.svg',
                         width: 24,
                         height: 24,
                       )
-                          : Icon(
+                          : const Icon(
                         Icons.filter_alt,
                         color: Color(0xFF93959A),
                       ),
                       itemBuilder: (BuildContext context) {
                         return [
-                          PopupMenuItem<String>(
-                            child: StatefulBuilder(builder:
-                                (BuildContext context, StateSetter setState) {
-                              return Column(
-                                children: [
-                                  Row(
+                          PopUpMenuChecks<String>(
+                            child: StatefulBuilder(
+                                builder: (BuildContext context, StateSetter setState) {
+                                  return Column(
                                     children: [
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                blueFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            // Обновление состояния Checkbox
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    blueFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
-                                            });
-                                          });
-                                          popupMenuKey.currentState
-                                              ?.setState(() {});
-                                        },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[blueFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
+                                      const Text('Фильтры по состоянию', style: AppTextStyles.defaultTextStyle,),
+                                      Row(
+                                        children: [
+                                          Checkbox(
+                                            value: filter.values
+                                                .firstWhere((filterData) =>
+                                            filterData.intValue == blueFilterIndex)
+                                                .booleanValue,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                filter.values
+                                                    .where((filterData) =>
+                                                filterData.intValue == blueFilterIndex)
+                                                    .forEach((filterData) {
+                                                  filterData.booleanValue = value;
+                                                });
+                                              });
+                                              popupMenuKey.currentState?.setState(() {});
+                                            },
+                                          ),
+                                          Container(
+                                            color: colorChangingCircle.colors[blueFilterIndex],
+                                            width: 16,
+                                            height: 16,
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
                                       Checkbox(
                                         value: filter.values
                                             .firstWhere((filterData) =>
@@ -819,7 +802,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   Container(
                                     height: 1,
-                                    color: Color(0xFFE3E3E3),
+                                    color: const Color(0xFFE3E3E3),
                                   ),
                                   TextButton(
                                       onPressed: () {
@@ -832,11 +815,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                       child: const Text(
                                         'Применить',
-                                        style: TextStyle(
-                                            fontFamily: 'Roboto',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xFF515357)),
+                                        style: AppTextStyles.boldTextStyle,
                                       ))
                                 ],
                               );
@@ -881,7 +860,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                SizedBox(
+                                Container(
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 3, vertical: 4),
                                   width: 24,
                                   height: 24,
                                   child: entry.key,
@@ -918,7 +900,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: GestureDetector(
                 onHorizontalDragUpdate: _handleSwipe, // Обработка свайпа
                 child: ListView.builder(
-                  itemExtent: 132,
+                  itemExtent: 148,
                   itemCount: information.length,
                   itemBuilder: (context, index) {
                     int stateIndex = information[index]['state'];
@@ -945,6 +927,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: [
                               Column(
                                 children: [
+                                  const SizedBox(height: 8,),
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Container(
@@ -962,7 +945,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       children: [
                                         DashedLine(
                                           color: nowColor,
-                                          height: 100,
+                                          height: 116,
                                           dashWidth: 1.0,
                                           dashSpace: 1.0,
                                         ),
@@ -979,72 +962,55 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ],
                               ),
                               Expanded(
-                                child: Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        CardName().settingNameToCard(
-                                            information[index]['state']),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: 'Roboto',
-                                          fontSize: 17,
-                                          color: Color(0xFF515357),
-                                        ),
+                                /*child: Align(
+              alignment: Alignment.topLeft,*/
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 8,),
+                                    Text(
+                                      CardName().settingNameToCard(
+                                          information[index]['state']),
+                                      style: AppTextStyles.boldTextStyle,
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(0, 4, 0, 0),
+                                      child: Text(
+                                        information[index]['name'].toString(),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.rearTextStyle,
                                       ),
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.all(0),
-                                        child: Text(
-                                          information[index]['name'].toString(),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            fontFamily: 'Roboto',
-                                            fontSize: 14,
-                                            color: Color(0xFF515357),
+                                    ),
+                                    Padding(padding: EdgeInsets.fromLTRB(0, 4, 0, 0),child:
+                                    Text(
+                                      information[index]['target_name']
+                                          .toString(),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.underTextStyle,
+                                    ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 4, 0, 16),
+                                        child: Align(
+                                          alignment: Alignment.bottomLeft,
+                                          // Align the text at the bottom left
+                                          child: Text(
+                                            CardName().getTimeText(
+                                              information[index]['time_value'],
+                                              selectedTimeRange,
+                                            ),
+                                            style: AppTextStyles.rearTextStyle,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-                                      Text(
-                                        information[index]['target_name']
-                                            .toString(),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'Roboto',
-                                          fontSize: 14,
-                                          color: Color(0xFF93959A),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 12,
-                                      ),
-                                      Text(
-                                        CardName().getTimeText(
-                                          information[index]['time_value'],
-                                          selectedTimeRange,
-                                        ),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontFamily: 'Roboto',
-                                          fontSize: 14,
-                                          color: Color(0xFF515357),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
+                                //),
                               ),
                             ],
                           ),
@@ -1089,10 +1055,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               8),
                                                     ),
                                                   ),
-                                                  DashedLine(
+                                                  /*DashedLine(
                                                       //todo make dynamic height
                                                       color: nowColor,
-                                                      height: 150)
+                                                      height: 150)*/
                                                 ],
                                               ),
                                               const SizedBox(
@@ -1111,391 +1077,289 @@ class _MyHomePageState extends State<MyHomePage> {
                                                           .settingNameToCard(
                                                               information[index]
                                                                   ['state']),
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontFamily: 'Roboto',
-                                                        fontSize: 17,
-                                                        color:
-                                                            Color(0xFF515357),
-                                                      ),
+                                                      style: AppTextStyles.boldTextStyle,
                                                     ),
                                                     const SizedBox(
                                                       height: 8,
                                                     ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text:
-                                                                "Имя устройства: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                            index]
-                                                                        ['name']
-                                                                    .toString(),
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                    information[index]['name']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Имя устройства: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]['name']
+                                                                            .toString(),
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 4,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text:
-                                                                "Имя целевого объекта: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
+                                                            ])
+                                                          ])
+                                                        : const SizedBox
+                                                            .shrink(),
+                                                    information[index]
+                                                                ['target_name']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                            index]
-                                                                        [
-                                                                        'target_name']
-                                                                    .toString(),
-                                                                style:
-                                                                    const TextStyle(
-                                                                  decoration:
-                                                                      TextDecoration
-                                                                          .underline,
-                                                                  color: Colors
-                                                                      .blue,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  // color: Color(0xFF93959A),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Имя целевого объекта: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]['target_name']
+                                                                            .toString(),
+                                                                        style:
+                                                                          AppTextStyles.linkText,
+                                                                        recognizer:
+                                                                            TapGestureRecognizer()
+                                                                              ..onTap = () {
+                                                                                showDialog(
+                                                                                    //карточка подробной информации
+                                                                                    context: context,
+                                                                                    builder: (BuildContext context) {
+                                                                                      return Dialog(
+                                                                                          insetPadding: const EdgeInsets.all(10),
+                                                                                          shape: RoundedRectangleBorder(
+                                                                                            borderRadius: BorderRadius.circular(10.0),
+                                                                                          ),
+                                                                                          child: SizedBox(
+                                                                                            width: double.infinity,
+                                                                                            height: double.infinity,
+                                                                                            // Установка ширины контейнера равной ширине экрана
+                                                                                            child: Container(
+                                                                                                width: 150,
+                                                                                                height: 150,
+                                                                                                child: const Align(
+                                                                                                  alignment: Alignment.center,
+                                                                                                  child: Text('График'),
+                                                                                                )),
+                                                                                          ));
+                                                                                    });
+                                                                              },
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
-                                                                recognizer:
-                                                                    TapGestureRecognizer()
-                                                                      ..onTap =
-                                                                          () {
-                                                                        showDialog(
-                                                                            //карточка подробной информации
-                                                                            context:
-                                                                                context,
-                                                                            builder:
-                                                                                (BuildContext context) {
-                                                                              return Dialog(
-                                                                                  insetPadding: const EdgeInsets.all(10),
-                                                                                  shape: RoundedRectangleBorder(
-                                                                                    borderRadius: BorderRadius.circular(10.0),
-                                                                                  ),
-                                                                                  child: SizedBox(
-                                                                                    width: double.infinity,
-                                                                                    height: double.infinity,
-                                                                                    // Установка ширины контейнера равной ширине экрана
-                                                                                    child: Container(
-                                                                                        width: 150,
-                                                                                        height: 150,
-                                                                                        child: const Align(
-                                                                                          alignment: Alignment.center,
-                                                                                          child: Text('График'),
-                                                                                        )),
-                                                                                  ));
-                                                                            });
-                                                                      },
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Flexible(
-                                                          child: RichText(
-                                                            text: TextSpan(
-                                                              text:
-                                                                  "IP-адрес: ",
-                                                              style:
-                                                                  const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                                fontFamily:
-                                                                    'Roboto',
-                                                                fontSize: 16,
-                                                                color: Colors
-                                                                    .black,
-                                                              ),
-                                                              children: <TextSpan>[
-                                                                TextSpan(
-                                                                  text: information[
-                                                                          index]
-                                                                      ['ip'],
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    fontFamily:
-                                                                        'Roboto',
-                                                                    fontSize:
-                                                                        16,
-                                                                    color: Color(
-                                                                        0xFF515357),
+                                                            ])
+                                                          ])
+                                                        : const SizedBox
+                                                            .shrink(),
+                                                    information[index]['ip']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Flexible(
+                                                                  child:
+                                                                      RichText(
+                                                                    text:
+                                                                        TextSpan(
+                                                                      text:
+                                                                          "IP-адрес: ",
+                                                                      style:
+                                                                      AppTextStyles.boldTextStyle,
+                                                                      children: <TextSpan>[
+                                                                        TextSpan(
+                                                                          text: information[index]
+                                                                              [
+                                                                              'ip'],
+                                                                          style:
+                                                                          AppTextStyles.additionalText,
+                                                                        ),
+                                                                      ],
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ],
+                                                            )
+                                                          ])
+                                                        : const SizedBox
+                                                            .shrink(),
+                                                    information[index][
+                                                                'alert_template']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text:
-                                                                "Шаблон сигнала: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                        index][
-                                                                    'alert_template'],
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Шаблон сигнала: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]
+                                                                            [
+                                                                            'alert_template'],
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text: "Сигнал: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
+                                                            ])
+                                                          ])
+                                                        : const SizedBox.shrink(),
+                                                    information[index]
+                                                                ['subalert']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                        index][
-                                                                    'subalert'],
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Сигнал: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]
+                                                                            [
+                                                                            'subalert'],
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text: "Значение: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
+                                                            ])
+                                                          ])
+                                                        : const SizedBox.shrink(),
+                                                    information[index]['value']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                            index]
-                                                                        [
-                                                                        'value'] +
-                                                                    information[
-                                                                            index]
-                                                                        [
-                                                                        'units'],
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Значение: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]['value'] +
+                                                                            information[index]['units'],
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text: "Описание: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
+                                                            ])
+                                                          ])
+                                                        : const SizedBox.shrink(),
+                                                    information[index]
+                                                                ['description']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                        index][
-                                                                    'description'],
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Описание: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]
+                                                                            [
+                                                                            'description'],
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      Flexible(
-                                                        child: RichText(
-                                                          text: TextSpan(
-                                                            text: "Метка: ",
-                                                            style:
-                                                                const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontFamily:
-                                                                  'Roboto',
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.black,
+                                                            ])
+                                                          ])
+                                                        : const SizedBox.shrink(),
+                                                    information[index]['label']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Column(children: [
+                                                            const SizedBox(
+                                                              height: 12,
                                                             ),
-                                                            children: <TextSpan>[
-                                                              TextSpan(
-                                                                text: information[
-                                                                        index]
-                                                                    ['label'],
-                                                                style:
-                                                                    const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  fontFamily:
-                                                                      'Roboto',
-                                                                  fontSize: 16,
-                                                                  color: Color(
-                                                                      0xFF515357),
+                                                            Row(children: [
+                                                              Flexible(
+                                                                child: RichText(
+                                                                  text:
+                                                                      TextSpan(
+                                                                    text:
+                                                                        "Метка: ",
+                                                                    style:
+                                                                    AppTextStyles.boldTextStyle,
+                                                                    children: <TextSpan>[
+                                                                      TextSpan(
+                                                                        text: information[index]
+                                                                            [
+                                                                            'label'],
+                                                                        style:
+                                                                        AppTextStyles.additionalText,
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]),
+                                                            ])
+                                                          ])
+                                                        : const SizedBox.shrink(),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
@@ -1504,14 +1368,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                         text: TextSpan(
                                                           text: "Время: ",
                                                           style:
-                                                              const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            fontFamily:
-                                                                'Roboto',
-                                                            fontSize: 16,
-                                                            color: Colors.black,
-                                                          ),
+                                                          AppTextStyles.boldTextStyle,
                                                           children: <TextSpan>[
                                                             TextSpan(
                                                               text: CardName()
@@ -1522,16 +1379,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                 selectedTimeRange,
                                                               ),
                                                               style:
-                                                                  const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                                fontFamily:
-                                                                    'Roboto',
-                                                                fontSize: 16,
-                                                                color: Color(
-                                                                    0xFF515357),
-                                                              ),
+                                                              AppTextStyles.additionalText,
                                                             ),
                                                           ],
                                                         ),
@@ -1585,7 +1433,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
                     onPressed: () {
                       setState(() {
@@ -1595,9 +1443,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       _controller.text = selectedPage.toString();
                     },
                     icon: const Icon(Icons.keyboard_double_arrow_left),
+                    iconSize: 40,
                   ),
                   IconButton(
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
                     onPressed: () {
                       setState(() {
@@ -1609,19 +1458,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       _controller.text = selectedPage.toString();
                     },
                     icon: const Icon(Icons.chevron_left),
+                    iconSize: 40,
                   ),
                   const Text(
                     'Страница:',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.boldTextStyle,
                   ),
-                  SizedBox(
+                  Container(
                     // Используем SizedBox для установки ширины TextField
                     width: 20,
-                    height: 40,
+                    padding: const EdgeInsets.symmetric(vertical: 5),
                     child: TextField(
                       minLines: 1,
                       // Устанавливаем минимальное количество строк
@@ -1629,11 +1475,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       controller: _controller,
                       onChanged: _validateInput,
                       onSubmitted: _onSubmitted,
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.boldTextStyle,
                       keyboardType: TextInputType.number,
                       textAlignVertical: TextAlignVertical.top,
                       decoration: InputDecoration(
@@ -1658,22 +1500,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   const Text(
                     ' из ',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.boldTextStyle,
                   ),
                   Text(
                     countOfPages.toString(),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.boldTextStyle,
                   ),
                   IconButton(
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
                     onPressed: () {
                       setState(() {
@@ -1685,9 +1519,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       _controller.text = selectedPage.toString();
                     },
                     icon: const Icon(Icons.chevron_right),
+                    iconSize: 40,
                   ),
                   IconButton(
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
                     onPressed: () {
                       setState(() {
@@ -1697,8 +1532,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       _controller.text = selectedPage.toString();
                     },
                     icon: const Icon(Icons.keyboard_double_arrow_right),
+                    iconSize: 40,
                   ),
-                  Text('${configReader.recordsOnPage} из 30000'),
+                  Text('${configReader.recordsOnPage}/30000'),
                   /*const SizedBox(
                       width: 16,
                     )*/
@@ -1771,6 +1607,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
   }
+
   bool hasTrueValue(Map<Container, FilterData> filter) {
     for (final filterData in filter.values) {
       if (filterData.booleanValue == true) {
