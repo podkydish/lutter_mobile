@@ -15,14 +15,10 @@ import 'DashedLine.dart';
 import 'FilterData.dart';
 import 'PopUpMenuChecks.dart';
 
-enum TimeRange {
-  hour,
-  today,
-  yesterday,
-}
+enum TimeRange { hour, today, yesterday, week, month, year }
 
 void main() {
-  //debugPaintSizeEnabled = true; // режим отладки
+  //debugPaintSizeEnabled = true; // режим отладки стилей
   runApp(const MyApp());
 }
 
@@ -221,7 +217,6 @@ class _MyHomePageState extends State<MyHomePage> {
         List colorFilter = [];
         List searchFilter = [];
         int counter = 0;
-        int searchCounter = 0;
 
         if (selectedTimeRange == TimeRange.hour) {
           filteredInformation = allInformation
@@ -255,6 +250,36 @@ class _MyHomePageState extends State<MyHomePage> {
                   DateTime.fromMillisecondsSinceEpoch(
                     int.parse(info['time_value']) * 1000,
                   ).day)
+              .toList();
+        } else if(selectedTimeRange == TimeRange.week){
+          DateTime now = DateTime.now().toLocal();
+          DateTime lastWeek = now.subtract(const Duration(days: 7));
+
+          filteredInformation = allInformation
+              .where((info) =>
+              DateTime.fromMillisecondsSinceEpoch(
+                int.parse(info['time_value']) * 1000,
+              ).isAfter(lastWeek))
+              .toList();
+        } else if(selectedTimeRange == TimeRange.month){
+          DateTime now = DateTime.now().toLocal();
+          DateTime lastMonth = now.subtract(const Duration(days: 30));
+
+          filteredInformation = allInformation
+              .where((info) =>
+              DateTime.fromMillisecondsSinceEpoch(
+                int.parse(info['time_value']) * 1000,
+              ).isAfter(lastMonth))
+              .toList();
+        } else if(selectedTimeRange == TimeRange.year){
+          DateTime now = DateTime.now().toLocal();
+          DateTime lastYear = now.subtract(const Duration(days: 365));
+
+          filteredInformation = allInformation
+              .where((info) =>
+              DateTime.fromMillisecondsSinceEpoch(
+                int.parse(info['time_value']) * 1000,
+              ).isAfter(lastYear))
               .toList();
         }
         if (filteredInformation.isNotEmpty) {
@@ -294,7 +319,6 @@ class _MyHomePageState extends State<MyHomePage> {
             String query = searchQuery.toLowerCase();
             if (name.contains(query) || targetName.contains(query)) {
               searchFilter.add(colorFilter[i]);
-              searchCounter++;
             }
           }
         }
@@ -348,83 +372,176 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.symmetric(),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedTimeRange = TimeRange.hour;
-                            selectedPage = 1;
-                            _controller.text = selectedPage.toString();
-                            _readAndParseJsonFile();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation:
-                              selectedTimeRange == TimeRange.hour ? 2.0 : 0.0,
-                          backgroundColor: selectedTimeRange == TimeRange.hour
-                              ? const Color(0xFF93959A)
-                              : const Color(0xFFF0F1F2),
-                          foregroundColor: selectedTimeRange == TimeRange.hour
-                              ? const Color(0xFFF0F1F2)
-                              : const Color(0xFF93959A),
-                          textStyle: AppTextStyles.defaultTextStyle,
-                        ),
-                        child: const Text('Час'),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedPage = 1;
-                            selectedTimeRange = TimeRange.today;
-                            _controller.text = selectedPage.toString();
-                            _readAndParseJsonFile();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation:
-                              selectedTimeRange == TimeRange.today ? 2.0 : 0.0,
-                          backgroundColor: selectedTimeRange == TimeRange.today
-                              ? const Color(0xFF93959A)
-                              : const Color(0xFFF0F1F2),
-                          foregroundColor: selectedTimeRange == TimeRange.today
-                              ? const Color(0xFFF0F1F2)
-                              : const Color(0xFF93959A),
-                          textStyle: AppTextStyles.defaultTextStyle,
-                        ),
-                        child: const Text('Сегодня'),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedPage = 1;
-                            selectedTimeRange = TimeRange.yesterday;
-                            _controller.text = selectedPage.toString();
-                            _readAndParseJsonFile();
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                            foregroundColor:
-                                selectedTimeRange == TimeRange.yesterday
-                                    ? const Color(0xFFF0F1F2)
-                                    : const Color(0xFF93959A),
-                            backgroundColor:
-                                selectedTimeRange == TimeRange.yesterday
-                                    ? const Color(0xFF93959A)
-                                    : const Color(0xFFF0F1F2),
-                            elevation: selectedTimeRange == TimeRange.yesterday
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                          width: 100,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                selectedTimeRange = TimeRange.hour;
+                                selectedPage = 1;
+                                _controller.text = selectedPage.toString();
+                                _readAndParseJsonFile();
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: selectedTimeRange == TimeRange.hour
+                                  ? 2.0
+                                  : 0.0,
+                              backgroundColor:
+                                  selectedTimeRange == TimeRange.hour
+                                      ? const Color(0xFF93959A)
+                                      : const Color(0xFFF0F1F2),
+                              foregroundColor:
+                                  selectedTimeRange == TimeRange.hour
+                                      ? const Color(0xFFF0F1F2)
+                                      : const Color(0xFF93959A),
+                              textStyle: AppTextStyles.defaultTextStyle,
+                            ),
+                            child: const Text('Час'),
+                          )),
+                      SizedBox(
+                        width: 100,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPage = 1;
+                              selectedTimeRange = TimeRange.today;
+                              _controller.text = selectedPage.toString();
+                              _readAndParseJsonFile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: selectedTimeRange == TimeRange.today
                                 ? 2.0
                                 : 0.0,
-                            textStyle: AppTextStyles.defaultTextStyle),
-                        child: const Text('Вчера'),
+                            backgroundColor:
+                                selectedTimeRange == TimeRange.today
+                                    ? const Color(0xFF93959A)
+                                    : const Color(0xFFF0F1F2),
+                            foregroundColor:
+                                selectedTimeRange == TimeRange.today
+                                    ? const Color(0xFFF0F1F2)
+                                    : const Color(0xFF93959A),
+                            textStyle: AppTextStyles.defaultTextStyle,
+                          ),
+                          child: const Text('Сегодня'),
+                        ),
                       ),
-                    ),
-                  ],
+                      SizedBox(
+                        width: 100,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPage = 1;
+                              selectedTimeRange = TimeRange.yesterday;
+                              _controller.text = selectedPage.toString();
+                              _readAndParseJsonFile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor:
+                                  selectedTimeRange == TimeRange.yesterday
+                                      ? const Color(0xFFF0F1F2)
+                                      : const Color(0xFF93959A),
+                              backgroundColor:
+                                  selectedTimeRange == TimeRange.yesterday
+                                      ? const Color(0xFF93959A)
+                                      : const Color(0xFFF0F1F2),
+                              elevation:
+                                  selectedTimeRange == TimeRange.yesterday
+                                      ? 2.0
+                                      : 0.0,
+                              textStyle: AppTextStyles.defaultTextStyle),
+                          child: const Text('Вчера'),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPage = 1;
+                              selectedTimeRange = TimeRange.week;
+                              _controller.text = selectedPage.toString();
+                              _readAndParseJsonFile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor:
+                                  selectedTimeRange == TimeRange.week
+                                      ? const Color(0xFFF0F1F2)
+                                      : const Color(0xFF93959A),
+                              backgroundColor:
+                                  selectedTimeRange == TimeRange.week
+                                      ? const Color(0xFF93959A)
+                                      : const Color(0xFFF0F1F2),
+                              elevation: selectedTimeRange == TimeRange.week
+                                  ? 2.0
+                                  : 0.0,
+                              textStyle: AppTextStyles.defaultTextStyle),
+                          child: const Text('Неделя'),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPage = 1;
+                              selectedTimeRange = TimeRange.month;
+                              _controller.text = selectedPage.toString();
+                              _readAndParseJsonFile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor:
+                                  selectedTimeRange == TimeRange.month
+                                      ? const Color(0xFFF0F1F2)
+                                      : const Color(0xFF93959A),
+                              backgroundColor:
+                                  selectedTimeRange == TimeRange.month
+                                      ? const Color(0xFF93959A)
+                                      : const Color(0xFFF0F1F2),
+                              elevation: selectedTimeRange == TimeRange.month
+                                  ? 2.0
+                                  : 0.0,
+                              textStyle: AppTextStyles.defaultTextStyle),
+                          child: const Text('Месяц'),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 100,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPage = 1;
+                              selectedTimeRange = TimeRange.year;
+                              _controller.text = selectedPage.toString();
+                              _readAndParseJsonFile();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor:
+                                  selectedTimeRange == TimeRange.year
+                                      ? const Color(0xFFF0F1F2)
+                                      : const Color(0xFF93959A),
+                              backgroundColor:
+                                  selectedTimeRange == TimeRange.year
+                                      ? const Color(0xFF93959A)
+                                      : const Color(0xFFF0F1F2),
+                              elevation: selectedTimeRange == TimeRange.year
+                                  ? 2.0
+                                  : 0.0,
+                              textStyle: AppTextStyles.defaultTextStyle),
+                          child: const Text('Год'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -497,214 +614,382 @@ class _MyHomePageState extends State<MyHomePage> {
                       onCanceled: () {
                         _readAndParseJsonFile();
                       },
-                      constraints: const BoxConstraints.expand(width: 334, height: 230),
+                      constraints:
+                          const BoxConstraints.expand(width: 334, height: 230),
                       padding: EdgeInsets.zero,
                       key: popupMenuKey,
                       icon: hasTrueValue(filter)
                           ? SvgPicture.asset(
-                        'assets/filter_add.svg',
-                        width: 24,
-                        height: 24,
-                      )
+                              'assets/filter_add.svg',
+                              width: 24,
+                              height: 24,
+                            )
                           : const Icon(
-                        Icons.filter_alt,
-                        color: Color(0xFF93959A),
-                      ),
+                              Icons.filter_alt,
+                              color: Color(0xFF93959A),
+                            ),
                       itemBuilder: (BuildContext context) {
                         return [
                           PopUpMenuChecks<String>(
-                            child: StatefulBuilder(
-                                builder: (BuildContext context, StateSetter setState) {
-                                  return Column(
-                                    children: [
-                                      const Text('Фильтры по состоянию', style: AppTextStyles.defaultTextStyle,),
-                                      Row(
-                                        children: [
-                                          Checkbox(
-                                            value: filter.values
+                            child: StatefulBuilder(builder:
+                                (BuildContext context, StateSetter setState) {
+                              return Column(
+                                children: [
+                                  const Text(
+                                    'Фильтры по состоянию',
+                                    style: AppTextStyles.defaultTextStyle,
+                                  ),
+                                  Row(children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                                  filterData.intValue ==
+                                                  blueFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = !filter
+                                                .values
                                                 .firstWhere((filterData) =>
-                                            filterData.intValue == blueFilterIndex)
-                                                .booleanValue,
-                                            onChanged: (bool? value) {
-                                              setState(() {
-                                                filter.values
-                                                    .where((filterData) =>
-                                                filterData.intValue == blueFilterIndex)
-                                                    .forEach((filterData) {
-                                                  filterData.booleanValue = value;
-                                                });
+                                                    filterData.intValue ==
+                                                    blueFilterIndex)
+                                                .booleanValue;
+                                          });
+                                        });
+                                        popupMenuKey.currentState
+                                            ?.setState(() {});
+                                      },
+                                      child: Row(children: [
+                                        Checkbox(
+                                          value: filter.values
+                                              .firstWhere((filterData) =>
+                                                  filterData.intValue ==
+                                                  blueFilterIndex)
+                                              .booleanValue,
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      blueFilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    value!;
                                               });
-                                              popupMenuKey.currentState?.setState(() {});
-                                            },
-                                          ),
-                                          Container(
-                                            color: colorChangingCircle.colors[blueFilterIndex],
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                greenFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
+                                            });
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                        ),
+                                        Container(
+                                          color: colorChangingCircle
+                                              .colors[blueFilterIndex],
+                                          width: 16,
+                                          height: 16,
+                                        ),
+                                      ]),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    GestureDetector(
+                                        onTap: () {
                                           setState(() {
                                             filter.values
                                                 .where((filterData) =>
                                                     filterData.intValue ==
                                                     greenFilterIndex)
                                                 .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                              filterData.booleanValue = !filter
+                                                  .values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      greenFilterIndex)
+                                                  .booleanValue;
                                             });
                                           });
+                                          popupMenuKey.currentState
+                                              ?.setState(() {});
                                         },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[greenFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                yellowFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
+                                        child: Row(children: [
+                                          Checkbox(
+                                            value: filter.values
+                                                .firstWhere((filterData) =>
+                                                    filterData.intValue ==
+                                                    greenFilterIndex)
+                                                .booleanValue,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                filter.values
+                                                    .where((filterData) =>
+                                                        filterData.intValue ==
+                                                        greenFilterIndex)
+                                                    .forEach((filterData) {
+                                                  filterData.booleanValue =
+                                                      value!;
+                                                });
+                                              });
+                                            },
+                                          ),
+                                          Container(
+                                            color: colorChangingCircle
+                                                .colors[greenFilterIndex],
+                                            width: 16,
+                                            height: 16,
+                                          ),
+                                        ])),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    GestureDetector(
+                                        onTap: () {
                                           setState(() {
                                             filter.values
                                                 .where((filterData) =>
                                                     filterData.intValue ==
                                                     yellowFilterIndex)
                                                 .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                              filterData.booleanValue = !filter
+                                                  .values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      yellowFilterIndex)
+                                                  .booleanValue;
                                             });
                                           });
+                                          popupMenuKey.currentState
+                                              ?.setState(() {});
                                         },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[yellowFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                redFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
+                                        child: Row(children: [
+                                          Checkbox(
+                                            value: filter.values
+                                                .firstWhere((filterData) =>
+                                                    filterData.intValue ==
+                                                    yellowFilterIndex)
+                                                .booleanValue,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                filter.values
+                                                    .where((filterData) =>
+                                                        filterData.intValue ==
+                                                        yellowFilterIndex)
+                                                    .forEach((filterData) {
+                                                  filterData.booleanValue =
+                                                      value!;
+                                                });
+                                              });
+                                            },
+                                          ),
+                                          Container(
+                                            color: colorChangingCircle
+                                                .colors[yellowFilterIndex],
+                                            width: 16,
+                                            height: 16,
+                                          ),
+                                        ])),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          filter.values
+                                              .where((filterData) =>
+                                                  filterData.intValue ==
+                                                  redFilterIndex)
+                                              .forEach((filterData) {
+                                            filterData.booleanValue = !filter
+                                                .values
+                                                .firstWhere((filterData) =>
                                                     filterData.intValue ==
                                                     redFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
-                                            });
+                                                .booleanValue;
                                           });
-                                        },
+                                        });
+                                        popupMenuKey.currentState
+                                            ?.setState(() {});
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Checkbox(
+                                            value: filter.values
+                                                .firstWhere((filterData) =>
+                                                    filterData.intValue ==
+                                                    redFilterIndex)
+                                                .booleanValue,
+                                            onChanged: (bool? value) {
+                                              setState(() {
+                                                filter.values
+                                                    .where((filterData) =>
+                                                        filterData.intValue ==
+                                                        redFilterIndex)
+                                                    .forEach((filterData) {
+                                                  filterData.booleanValue =
+                                                      value!;
+                                                });
+                                              });
+                                            },
+                                          ),
+                                          Container(
+                                            color: colorChangingCircle
+                                                .colors[redFilterIndex],
+                                            width: 16,
+                                            height: 16,
+                                          ),
+                                        ],
                                       ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[redFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
-                                    ],
-                                  ),
+                                    )
+                                  ]),
                                   Row(
                                     children: [
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                purpleFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    purpleFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      purpleFilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue = !filter
+                                                    .values
+                                                    .firstWhere((filterData) =>
+                                                        filterData.intValue ==
+                                                        purpleFilterIndex)
+                                                    .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[purpleFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      purpleFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          purpleFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            Container(
+                                              color: colorChangingCircle
+                                                  .colors[purpleFilterIndex],
+                                              width: 16,
+                                              height: 16,
+                                            ),
+                                          ])),
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                greyFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    greyFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      greyFilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                greyFilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[greyFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      greyFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          greyFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            Container(
+                                              color: colorChangingCircle
+                                                  .colors[greyFilterIndex],
+                                              width: 16,
+                                              height: 16,
+                                            ),
+                                          ])),
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                skyFilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    skyFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      skyFilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                skyFilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      Container(
-                                        color: colorChangingCircle
-                                            .colors[skyFilterIndex],
-                                        width: 16,
-                                        height: 16,
-                                      ),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      skyFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          skyFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            Container(
+                                              color: colorChangingCircle
+                                                  .colors[skyFilterIndex],
+                                              width: 16,
+                                              height: 16,
+                                            ),
+                                          ])),
                                     ],
                                   ),
                                   Container(
@@ -713,91 +998,187 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   Row(
                                     children: [
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                c1FilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    c1FilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      c1FilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                c1FilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      const Text("C1"),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      c1FilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          c1FilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            const Text("C1"),
+                                          ])),
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                c2FilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    c2FilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      c2FilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                c2FilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      const Text('C2'),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      c2FilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          c2FilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            const Text('C2'),
+                                          ])),
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                c3FilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    c3FilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      c3FilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                c3FilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      const Text('C3'),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      c3FilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          c3FilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            const Text('C3'),
+                                          ])),
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Checkbox(
-                                        value: filter.values
-                                            .firstWhere((filterData) =>
-                                                filterData.intValue ==
-                                                c4FilterIndex)
-                                            .booleanValue,
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    c4FilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = value;
+                                      GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              filter.values
+                                                  .where((filterData) =>
+                                                      filterData.intValue ==
+                                                      c4FilterIndex)
+                                                  .forEach((filterData) {
+                                                filterData.booleanValue =
+                                                    !filter.values
+                                                        .firstWhere(
+                                                            (filterData) =>
+                                                                filterData
+                                                                    .intValue ==
+                                                                c4FilterIndex)
+                                                        .booleanValue;
+                                              });
                                             });
-                                          });
-                                        },
-                                      ),
-                                      const Text('C4'),
+                                            popupMenuKey.currentState
+                                                ?.setState(() {});
+                                          },
+                                          child: Row(children: [
+                                            Checkbox(
+                                              value: filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      c4FilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          c4FilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                              },
+                                            ),
+                                            const Text('C4'),
+                                          ])),
                                     ],
                                   ),
                                   Container(
@@ -837,7 +1218,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.only(left: 16),
               child: Container(
-                alignment: Alignment.topLeft, // Align the Wrap to the top left
+                alignment: Alignment.topLeft,
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 8,
@@ -927,7 +1308,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             children: [
                               Column(
                                 children: [
-                                  const SizedBox(height: 8,),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
                                   Align(
                                     alignment: Alignment.topLeft,
                                     child: Container(
@@ -967,14 +1350,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(height: 8,),
+                                    const SizedBox(
+                                      height: 8,
+                                    ),
                                     Text(
                                       CardName().settingNameToCard(
                                           information[index]['state']),
                                       style: AppTextStyles.boldTextStyle,
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.fromLTRB(0, 4, 0, 0),
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 4, 0, 0),
                                       child: Text(
                                         information[index]['name'].toString(),
                                         maxLines: 1,
@@ -982,14 +1368,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                         style: AppTextStyles.rearTextStyle,
                                       ),
                                     ),
-                                    Padding(padding: EdgeInsets.fromLTRB(0, 4, 0, 0),child:
-                                    Text(
-                                      information[index]['target_name']
-                                          .toString(),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.underTextStyle,
-                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 4, 0, 0),
+                                      child: Text(
+                                        information[index]['target_name']
+                                            .toString(),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.underTextStyle,
+                                      ),
                                     ),
                                     Expanded(
                                       child: Padding(
@@ -997,7 +1385,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                             0, 4, 0, 16),
                                         child: Align(
                                           alignment: Alignment.bottomLeft,
-                                          // Align the text at the bottom left
                                           child: Text(
                                             CardName().getTimeText(
                                               information[index]['time_value'],
@@ -1010,7 +1397,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ],
                                 ),
-                                //),
                               ),
                             ],
                           ),
@@ -1077,7 +1463,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                           .settingNameToCard(
                                                               information[index]
                                                                   ['state']),
-                                                      style: AppTextStyles.boldTextStyle,
+                                                      style: AppTextStyles
+                                                          .boldTextStyle,
                                                     ),
                                                     const SizedBox(
                                                       height: 8,
@@ -1093,14 +1480,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Имя устройства: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]['name']
                                                                             .toString(),
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1125,19 +1512,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Имя целевого объекта: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]['target_name']
                                                                             .toString(),
-                                                                        style:
-                                                                          AppTextStyles.linkText,
+                                                                        style: AppTextStyles
+                                                                            .linkText,
                                                                         recognizer:
                                                                             TapGestureRecognizer()
                                                                               ..onTap = () {
                                                                                 showDialog(
-                                                                                    //карточка подробной информации
                                                                                     context: context,
                                                                                     builder: (BuildContext context) {
                                                                                       return Dialog(
@@ -1145,14 +1531,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                                           shape: RoundedRectangleBorder(
                                                                                             borderRadius: BorderRadius.circular(10.0),
                                                                                           ),
-                                                                                          child: SizedBox(
+                                                                                          child: const SizedBox(
                                                                                             width: double.infinity,
                                                                                             height: double.infinity,
                                                                                             // Установка ширины контейнера равной ширине экрана
-                                                                                            child: Container(
+                                                                                            child: SizedBox(
                                                                                                 width: 150,
                                                                                                 height: 150,
-                                                                                                child: const Align(
+                                                                                                child: Align(
                                                                                                   alignment: Alignment.center,
                                                                                                   child: Text('График'),
                                                                                                 )),
@@ -1184,15 +1570,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                         TextSpan(
                                                                       text:
                                                                           "IP-адрес: ",
-                                                                      style:
-                                                                      AppTextStyles.boldTextStyle,
+                                                                      style: AppTextStyles
+                                                                          .boldTextStyle,
                                                                       children: <TextSpan>[
                                                                         TextSpan(
                                                                           text: information[index]
                                                                               [
                                                                               'ip'],
                                                                           style:
-                                                                          AppTextStyles.additionalText,
+                                                                              AppTextStyles.additionalText,
                                                                         ),
                                                                       ],
                                                                     ),
@@ -1218,15 +1604,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Шаблон сигнала: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]
                                                                             [
                                                                             'alert_template'],
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1234,7 +1620,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               ),
                                                             ])
                                                           ])
-                                                        : const SizedBox.shrink(),
+                                                        : const SizedBox
+                                                            .shrink(),
                                                     information[index]
                                                                 ['subalert']
                                                             .toString()
@@ -1250,15 +1637,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Сигнал: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]
                                                                             [
                                                                             'subalert'],
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1266,7 +1653,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               ),
                                                             ])
                                                           ])
-                                                        : const SizedBox.shrink(),
+                                                        : const SizedBox
+                                                            .shrink(),
                                                     information[index]['value']
                                                             .toString()
                                                             .isNotEmpty
@@ -1281,14 +1669,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Значение: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]['value'] +
                                                                             information[index]['units'],
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1296,7 +1684,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               ),
                                                             ])
                                                           ])
-                                                        : const SizedBox.shrink(),
+                                                        : const SizedBox
+                                                            .shrink(),
                                                     information[index]
                                                                 ['description']
                                                             .toString()
@@ -1312,15 +1701,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Описание: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]
                                                                             [
                                                                             'description'],
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1328,7 +1717,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               ),
                                                             ])
                                                           ])
-                                                        : const SizedBox.shrink(),
+                                                        : const SizedBox
+                                                            .shrink(),
                                                     information[index]['label']
                                                             .toString()
                                                             .isNotEmpty
@@ -1343,15 +1733,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       TextSpan(
                                                                     text:
                                                                         "Метка: ",
-                                                                    style:
-                                                                    AppTextStyles.boldTextStyle,
+                                                                    style: AppTextStyles
+                                                                        .boldTextStyle,
                                                                     children: <TextSpan>[
                                                                       TextSpan(
                                                                         text: information[index]
                                                                             [
                                                                             'label'],
-                                                                        style:
-                                                                        AppTextStyles.additionalText,
+                                                                        style: AppTextStyles
+                                                                            .additionalText,
                                                                       ),
                                                                     ],
                                                                   ),
@@ -1359,7 +1749,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                               ),
                                                             ])
                                                           ])
-                                                        : const SizedBox.shrink(),
+                                                        : const SizedBox
+                                                            .shrink(),
                                                     const SizedBox(
                                                       height: 12,
                                                     ),
@@ -1367,8 +1758,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       RichText(
                                                         text: TextSpan(
                                                           text: "Время: ",
-                                                          style:
-                                                          AppTextStyles.boldTextStyle,
+                                                          style: AppTextStyles
+                                                              .boldTextStyle,
                                                           children: <TextSpan>[
                                                             TextSpan(
                                                               text: CardName()
@@ -1378,8 +1769,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                     'time_value'],
                                                                 selectedTimeRange,
                                                               ),
-                                                              style:
-                                                              AppTextStyles.additionalText,
+                                                              style: AppTextStyles
+                                                                  .additionalText,
                                                             ),
                                                           ],
                                                         ),
@@ -1430,7 +1821,6 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 mainAxisSize: MainAxisSize.max, // занимаем всю ширину экрана
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                     constraints: const BoxConstraints(),
@@ -1617,9 +2007,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return false;
   }
 }
-
-// todo разобраться со временем now()
-// стили до конца недели
 
 /*Входные данный файл с json форматом, в котором для нормального функционирования должны иметься поля:
 * 1. state

@@ -47,7 +47,7 @@ class CardName {
           .toUtc();
       final String formattedTime = DateFormat('HH:mm:ss').format(date);
       return formattedTime;
-    } else if (selectedTimeRange == TimeRange.yesterday) {
+    } else if (selectedTimeRange == TimeRange.yesterday ||selectedTimeRange == TimeRange.week || selectedTimeRange == TimeRange.month || selectedTimeRange == TimeRange.year) {
       final DateTime eventTime =
       DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
           .toUtc();

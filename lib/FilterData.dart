@@ -1,5 +1,5 @@
 class FilterData {
-  bool? booleanValue;
+  bool booleanValue;
   int intValue;
 
   FilterData(this.booleanValue, this.intValue);
