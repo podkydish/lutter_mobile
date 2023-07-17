@@ -32,10 +32,10 @@ class CardName {
   String getTimeText(String timeValue, TimeRange selectedTimeRange) {
     if (selectedTimeRange == TimeRange.hour) {
       final DateTime now =
-      DateTime.now().toLocal().add(const Duration(hours: 3));
+          DateTime.now().toLocal().add(const Duration(hours: 3));
       final DateTime eventTime =
-      DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-          .toUtc();
+          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
+              .toUtc();
       final int minutesAgo =
           (now.millisecondsSinceEpoch - eventTime.millisecondsSinceEpoch) ~/
               60000;
@@ -43,16 +43,19 @@ class CardName {
       return '$minutesAgo мин. назад';
     } else if (selectedTimeRange == TimeRange.today) {
       var date =
-      DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-          .toUtc();
+          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
+              .toUtc();
       final String formattedTime = DateFormat('HH:mm:ss').format(date);
       return formattedTime;
-    } else if (selectedTimeRange == TimeRange.yesterday ||selectedTimeRange == TimeRange.week || selectedTimeRange == TimeRange.month || selectedTimeRange == TimeRange.year) {
+    } else if (selectedTimeRange == TimeRange.yesterday ||
+        selectedTimeRange == TimeRange.week ||
+        selectedTimeRange == TimeRange.month ||
+        selectedTimeRange == TimeRange.year) {
       final DateTime eventTime =
-      DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
-          .toUtc();
+          DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
+              .toUtc();
       final String formattedDateTime =
-      DateFormat('HH:mm:ss dd.MM.yy ').format(eventTime);
+          DateFormat('HH:mm:ss dd.MM.yy ').format(eventTime);
       return formattedDateTime;
     } else {
       return timeValue;

@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:untitled/ConfigReader.dart';
-import 'package:untitled/text_styles.dart';
+import 'package:untitled/widgets/FilterIndicator.dart';
+import 'package:untitled/widgets/FilterMenu.dart';
+import 'package:untitled/styles/text_styles.dart';
 
+import 'CardItem.dart';
 import 'CardName.dart';
 import 'ColorChangingCircle.dart';
-import 'DashedLine.dart';
+import 'widgets/DashedLine.dart';
+import 'widgets/ExtendedInformationWidget.dart';
 import 'FilterData.dart';
-import 'PopUpMenuChecks.dart';
 
 enum TimeRange { hour, today, yesterday, week, month, year }
 
@@ -69,8 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String firstPage = 'assets/1.txt';
   String secondPage = 'assets/2.txt';
   int selectedPage = 1;
-  bool _isValid = true;
   int countOfPages = 2; //типа пришло от сервера
+
 
   TimeRange selectedTimeRange = TimeRange.hour; //поле выбора временного фильтра
 //объявление индексов фильтров
@@ -251,35 +252,32 @@ class _MyHomePageState extends State<MyHomePage> {
                     int.parse(info['time_value']) * 1000,
                   ).day)
               .toList();
-        } else if(selectedTimeRange == TimeRange.week){
+        } else if (selectedTimeRange == TimeRange.week) {
           DateTime now = DateTime.now().toLocal();
           DateTime lastWeek = now.subtract(const Duration(days: 7));
 
           filteredInformation = allInformation
-              .where((info) =>
-              DateTime.fromMillisecondsSinceEpoch(
-                int.parse(info['time_value']) * 1000,
-              ).isAfter(lastWeek))
+              .where((info) => DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(info['time_value']) * 1000,
+                  ).isAfter(lastWeek))
               .toList();
-        } else if(selectedTimeRange == TimeRange.month){
+        } else if (selectedTimeRange == TimeRange.month) {
           DateTime now = DateTime.now().toLocal();
           DateTime lastMonth = now.subtract(const Duration(days: 30));
 
           filteredInformation = allInformation
-              .where((info) =>
-              DateTime.fromMillisecondsSinceEpoch(
-                int.parse(info['time_value']) * 1000,
-              ).isAfter(lastMonth))
+              .where((info) => DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(info['time_value']) * 1000,
+                  ).isAfter(lastMonth))
               .toList();
-        } else if(selectedTimeRange == TimeRange.year){
+        } else if (selectedTimeRange == TimeRange.year) {
           DateTime now = DateTime.now().toLocal();
           DateTime lastYear = now.subtract(const Duration(days: 365));
 
           filteredInformation = allInformation
-              .where((info) =>
-              DateTime.fromMillisecondsSinceEpoch(
-                int.parse(info['time_value']) * 1000,
-              ).isAfter(lastYear))
+              .where((info) => DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(info['time_value']) * 1000,
+                  ).isAfter(lastYear))
               .toList();
         }
         if (filteredInformation.isNotEmpty) {
@@ -327,12 +325,56 @@ class _MyHomePageState extends State<MyHomePage> {
             information = [];
           } else if (searchFilter.isNotEmpty) {
             information =
-                searchFilter.take(configReader.recordsOnPage).toList();
+                searchFilter.take(configReader.recordsOnPage).map((item) {
+              return CardItem(
+                state: item['state'],
+                name: item['name'].toString(),
+                targetName: item['target_name'].toString(),
+                timeValue: item['time_value'],
+                alert: item['alert_template'].toString(),
+                subalert: item['subalert'].toString(),
+                value: (item['value'] + item['units']).toString(),
+                description: item['description'].toString(),
+                label: item['label'].toString(),
+                ip: item['ip'].toString(),
+                isExpanded: false, // Изначально карточка свернута
+              );
+            }).toList();
           } else if (counter != 0) {
-            information = colorFilter.take(configReader.recordsOnPage).toList();
-          } else {
             information =
-                filteredInformation.take(configReader.recordsOnPage).toList();
+                colorFilter.take(configReader.recordsOnPage).map((item) {
+              return CardItem(
+                state: item['state'],
+                name: item['name'].toString(),
+                targetName: item['target_name'].toString(),
+                timeValue: item['time_value'],
+                alert: item['alert_template'].toString(),
+                subalert: item['subalert'].toString(),
+                value: (item['value'] + item['units']).toString(),
+                description: item['description'].toString(),
+                label: item['label'].toString(),
+                ip: item['ip'].toString(),
+                isExpanded: false, // Изначально карточка свернута
+              );
+            }).toList();
+          } else {
+            information = filteredInformation
+                .take(configReader.recordsOnPage)
+                .map((item) {
+              return CardItem(
+                state: item['state'],
+                name: item['name'].toString(),
+                targetName: item['target_name'].toString(),
+                timeValue: item['time_value'],
+                alert: item['alert_template'].toString(),
+                subalert: item['subalert'].toString(),
+                value: (item['value'] + item['units']).toString(),
+                description: item['description'].toString(),
+                label: item['label'].toString(),
+                ip: item['ip'].toString(),
+                isExpanded: false, // Изначально карточка свернута
+              );
+            }).toList();
           }
         });
       } else {
@@ -610,601 +652,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ],
                     ),
-                    child: PopupMenuButton<String>(
-                      onCanceled: () {
-                        _readAndParseJsonFile();
-                      },
-                      constraints:
-                          const BoxConstraints.expand(width: 334, height: 230),
-                      padding: EdgeInsets.zero,
-                      key: popupMenuKey,
-                      icon: hasTrueValue(filter)
-                          ? SvgPicture.asset(
-                              'assets/filter_add.svg',
-                              width: 24,
-                              height: 24,
-                            )
-                          : const Icon(
-                              Icons.filter_alt,
-                              color: Color(0xFF93959A),
-                            ),
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          PopUpMenuChecks<String>(
-                            child: StatefulBuilder(builder:
-                                (BuildContext context, StateSetter setState) {
-                              return Column(
-                                children: [
-                                  const Text(
-                                    'Фильтры по состоянию',
-                                    style: AppTextStyles.defaultTextStyle,
-                                  ),
-                                  Row(children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  blueFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = !filter
-                                                .values
-                                                .firstWhere((filterData) =>
-                                                    filterData.intValue ==
-                                                    blueFilterIndex)
-                                                .booleanValue;
-                                          });
-                                        });
-                                        popupMenuKey.currentState
-                                            ?.setState(() {});
-                                      },
-                                      child: Row(children: [
-                                        Checkbox(
-                                          value: filter.values
-                                              .firstWhere((filterData) =>
-                                                  filterData.intValue ==
-                                                  blueFilterIndex)
-                                              .booleanValue,
-                                          onChanged: (bool? value) {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      blueFilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    value!;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                        ),
-                                        Container(
-                                          color: colorChangingCircle
-                                              .colors[blueFilterIndex],
-                                          width: 16,
-                                          height: 16,
-                                        ),
-                                      ]),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    greenFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = !filter
-                                                  .values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      greenFilterIndex)
-                                                  .booleanValue;
-                                            });
-                                          });
-                                          popupMenuKey.currentState
-                                              ?.setState(() {});
-                                        },
-                                        child: Row(children: [
-                                          Checkbox(
-                                            value: filter.values
-                                                .firstWhere((filterData) =>
-                                                    filterData.intValue ==
-                                                    greenFilterIndex)
-                                                .booleanValue,
-                                            onChanged: (bool? value) {
-                                              setState(() {
-                                                filter.values
-                                                    .where((filterData) =>
-                                                        filterData.intValue ==
-                                                        greenFilterIndex)
-                                                    .forEach((filterData) {
-                                                  filterData.booleanValue =
-                                                      value!;
-                                                });
-                                              });
-                                            },
-                                          ),
-                                          Container(
-                                            color: colorChangingCircle
-                                                .colors[greenFilterIndex],
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                        ])),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            filter.values
-                                                .where((filterData) =>
-                                                    filterData.intValue ==
-                                                    yellowFilterIndex)
-                                                .forEach((filterData) {
-                                              filterData.booleanValue = !filter
-                                                  .values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      yellowFilterIndex)
-                                                  .booleanValue;
-                                            });
-                                          });
-                                          popupMenuKey.currentState
-                                              ?.setState(() {});
-                                        },
-                                        child: Row(children: [
-                                          Checkbox(
-                                            value: filter.values
-                                                .firstWhere((filterData) =>
-                                                    filterData.intValue ==
-                                                    yellowFilterIndex)
-                                                .booleanValue,
-                                            onChanged: (bool? value) {
-                                              setState(() {
-                                                filter.values
-                                                    .where((filterData) =>
-                                                        filterData.intValue ==
-                                                        yellowFilterIndex)
-                                                    .forEach((filterData) {
-                                                  filterData.booleanValue =
-                                                      value!;
-                                                });
-                                              });
-                                            },
-                                          ),
-                                          Container(
-                                            color: colorChangingCircle
-                                                .colors[yellowFilterIndex],
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                        ])),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          filter.values
-                                              .where((filterData) =>
-                                                  filterData.intValue ==
-                                                  redFilterIndex)
-                                              .forEach((filterData) {
-                                            filterData.booleanValue = !filter
-                                                .values
-                                                .firstWhere((filterData) =>
-                                                    filterData.intValue ==
-                                                    redFilterIndex)
-                                                .booleanValue;
-                                          });
-                                        });
-                                        popupMenuKey.currentState
-                                            ?.setState(() {});
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Checkbox(
-                                            value: filter.values
-                                                .firstWhere((filterData) =>
-                                                    filterData.intValue ==
-                                                    redFilterIndex)
-                                                .booleanValue,
-                                            onChanged: (bool? value) {
-                                              setState(() {
-                                                filter.values
-                                                    .where((filterData) =>
-                                                        filterData.intValue ==
-                                                        redFilterIndex)
-                                                    .forEach((filterData) {
-                                                  filterData.booleanValue =
-                                                      value!;
-                                                });
-                                              });
-                                            },
-                                          ),
-                                          Container(
-                                            color: colorChangingCircle
-                                                .colors[redFilterIndex],
-                                            width: 16,
-                                            height: 16,
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ]),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      purpleFilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue = !filter
-                                                    .values
-                                                    .firstWhere((filterData) =>
-                                                        filterData.intValue ==
-                                                        purpleFilterIndex)
-                                                    .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      purpleFilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          purpleFilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            Container(
-                                              color: colorChangingCircle
-                                                  .colors[purpleFilterIndex],
-                                              width: 16,
-                                              height: 16,
-                                            ),
-                                          ])),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      greyFilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                greyFilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      greyFilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          greyFilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            Container(
-                                              color: colorChangingCircle
-                                                  .colors[greyFilterIndex],
-                                              width: 16,
-                                              height: 16,
-                                            ),
-                                          ])),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      skyFilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                skyFilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      skyFilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          skyFilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            Container(
-                                              color: colorChangingCircle
-                                                  .colors[skyFilterIndex],
-                                              width: 16,
-                                              height: 16,
-                                            ),
-                                          ])),
-                                    ],
-                                  ),
-                                  Container(
-                                    height: 1,
-                                    color: const Color(0xFFE3E3E3),
-                                  ),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      c1FilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                c1FilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      c1FilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          c1FilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            const Text("C1"),
-                                          ])),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      c2FilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                c2FilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      c2FilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          c2FilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            const Text('C2'),
-                                          ])),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      c3FilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                c3FilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      c3FilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          c3FilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            const Text('C3'),
-                                          ])),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              filter.values
-                                                  .where((filterData) =>
-                                                      filterData.intValue ==
-                                                      c4FilterIndex)
-                                                  .forEach((filterData) {
-                                                filterData.booleanValue =
-                                                    !filter.values
-                                                        .firstWhere(
-                                                            (filterData) =>
-                                                                filterData
-                                                                    .intValue ==
-                                                                c4FilterIndex)
-                                                        .booleanValue;
-                                              });
-                                            });
-                                            popupMenuKey.currentState
-                                                ?.setState(() {});
-                                          },
-                                          child: Row(children: [
-                                            Checkbox(
-                                              value: filter.values
-                                                  .firstWhere((filterData) =>
-                                                      filterData.intValue ==
-                                                      c4FilterIndex)
-                                                  .booleanValue,
-                                              onChanged: (bool? value) {
-                                                setState(() {
-                                                  filter.values
-                                                      .where((filterData) =>
-                                                          filterData.intValue ==
-                                                          c4FilterIndex)
-                                                      .forEach((filterData) {
-                                                    filterData.booleanValue =
-                                                        value!;
-                                                  });
-                                                });
-                                              },
-                                            ),
-                                            const Text('C4'),
-                                          ])),
-                                    ],
-                                  ),
-                                  Container(
-                                    height: 1,
-                                    color: const Color(0xFFE3E3E3),
-                                  ),
-                                  TextButton(
-                                      onPressed: () {
-                                        _readAndParseJsonFile();
-                                        try {
-                                          Navigator.pop(context);
-                                        } catch (e) {
-                                          log('$e');
-                                        }
-                                      },
-                                      child: const Text(
-                                        'Применить',
-                                        style: AppTextStyles.boldTextStyle,
-                                      ))
-                                ],
-                              );
-                            }),
-                          ),
-                        ];
-                      },
-                    ),
+                    child: FilterMenu(
+                        readAndParseJsonCallback: _readAndParseJsonFile,
+                        filter: filter,
+                        popupMenuKey: popupMenuKey,
+                        colorChangingCircle: colorChangingCircle),
                   ),
                   const SizedBox(
                     width: 16,
@@ -1215,599 +667,318 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 8,
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Container(
-                alignment: Alignment.topLeft,
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.start,
-                  children: filter.entries
-                      .where((entry) => entry.value.booleanValue == true)
-                      .map(
-                        (entry) => Material(
-                          elevation: 4.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                entry.value.booleanValue = false;
-                                _readAndParseJsonFile();
-                              });
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 3, vertical: 4),
-                                  width: 24,
-                                  height: 24,
-                                  child: entry.key,
-                                ),
-                                const SizedBox(width: 4),
-                                SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    iconSize: 24,
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () {
-                                      setState(() {
-                                        entry.value.booleanValue = false;
-                                        _readAndParseJsonFile();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
+            FilterIndicator(
+                filter: filter, readAndParseJson: _readAndParseJsonFile),
             const SizedBox(
               height: 20,
             ),
             Expanded(
               child: GestureDetector(
-                onHorizontalDragUpdate: _handleSwipe, // Обработка свайпа
+                onHorizontalDragUpdate: _handleSwipe,
                 child: ListView.builder(
-                  itemExtent: 148,
                   itemCount: information.length,
                   itemBuilder: (context, index) {
-                    int stateIndex = information[index]['state'];
+                    int stateIndex = information[index].state;
                     final Color nowColor =
                         colorChangingCircle.colors[stateIndex];
-                    return Card(
-                      elevation: 0,
-                      color: const Color(0xFFFFFFFF),
-                      shadowColor: Colors.transparent,
-                      margin: const EdgeInsets.all(0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF),
-                          border: Border(
-                            bottom: const BorderSide(color: Color(0xFFE3E3E3)),
-                            left: BorderSide(
-                              color: nowColor,
-                              width: 6,
+                    return Container(
+                      child: Card(
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        margin: const EdgeInsets.all(0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFFFF),
+                            border: Border(
+                              bottom:
+                                  const BorderSide(color: Color(0xFFE3E3E3)),
+                              left: BorderSide(
+                                color: nowColor,
+                                width: 6,
+                              ),
                             ),
                           ),
-                        ),
-                        child: ListTile(
-                          subtitle: Row(
-                            children: [
-                              Column(
-                                children: [
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Container(
-                                      height: 16,
-                                      width: 16,
-                                      decoration: BoxDecoration(
-                                        color: nowColor,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 1,
-                                    child: Column(
-                                      children: [
-                                        DashedLine(
-                                          color: nowColor,
-                                          height: 116,
-                                          dashWidth: 1.0,
-                                          dashSpace: 1.0,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Column(
-                                children: [
-                                  SizedBox(
-                                    width: 8,
-                                  )
-                                ],
-                              ),
-                              Expanded(
-                                /*child: Align(
-              alignment: Alignment.topLeft,*/
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      CardName().settingNameToCard(
-                                          information[index]['state']),
-                                      style: AppTextStyles.boldTextStyle,
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 4, 0, 0),
-                                      child: Text(
-                                        information[index]['name'].toString(),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.rearTextStyle,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 4, 0, 0),
-                                      child: Text(
-                                        information[index]['target_name']
-                                            .toString(),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.underTextStyle,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            0, 4, 0, 16),
-                                        child: Align(
-                                          alignment: Alignment.bottomLeft,
-                                          child: Text(
-                                            CardName().getTimeText(
-                                              information[index]['time_value'],
-                                              selectedTimeRange,
-                                            ),
-                                            style: AppTextStyles.rearTextStyle,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          onLongPress: () {
-                            showDialog(
-                              //карточка подробной информации
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Dialog(
-                                  insetPadding: const EdgeInsets.all(10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    // Установка ширины контейнера равной ширине экрана
-                                    child: SingleChildScrollView(
-                                      child: Column(
+                          child: ListTile(
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: IntrinsicHeight(
+                                  child: Row(
+                                    children: [
+                                      Column(
                                         children: [
-                                          const SizedBox(
-                                            height: 6,
+                                          Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Container(
+                                              height: 16,
+                                              width: 16,
+                                              decoration: BoxDecoration(
+                                                color: nowColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
                                           ),
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(
-                                                width: 16,
-                                              ),
-                                              Column(
-                                                children: [
-                                                  const SizedBox(
-                                                    height: 16,
-                                                  ),
-                                                  Container(
-                                                    height: 16,
-                                                    width: 16,
-                                                    decoration: BoxDecoration(
-                                                      color: nowColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                  ),
-                                                  /*DashedLine(
-                                                      //todo make dynamic height
-                                                      color: nowColor,
-                                                      height: 150)*/
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                width: 8,
-                                              ),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const SizedBox(
-                                                      height: 16,
-                                                    ),
-                                                    Text(
-                                                      CardName()
-                                                          .settingNameToCard(
-                                                              information[index]
-                                                                  ['state']),
-                                                      style: AppTextStyles
-                                                          .boldTextStyle,
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 8,
-                                                    ),
-                                                    information[index]['name']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Имя устройства: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]['name']
-                                                                            .toString(),
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]
-                                                                ['target_name']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Имя целевого объекта: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]['target_name']
-                                                                            .toString(),
-                                                                        style: AppTextStyles
-                                                                            .linkText,
-                                                                        recognizer:
-                                                                            TapGestureRecognizer()
-                                                                              ..onTap = () {
-                                                                                showDialog(
-                                                                                    context: context,
-                                                                                    builder: (BuildContext context) {
-                                                                                      return Dialog(
-                                                                                          insetPadding: const EdgeInsets.all(10),
-                                                                                          shape: RoundedRectangleBorder(
-                                                                                            borderRadius: BorderRadius.circular(10.0),
-                                                                                          ),
-                                                                                          child: const SizedBox(
-                                                                                            width: double.infinity,
-                                                                                            height: double.infinity,
-                                                                                            // Установка ширины контейнера равной ширине экрана
-                                                                                            child: SizedBox(
-                                                                                                width: 150,
-                                                                                                height: 150,
-                                                                                                child: Align(
-                                                                                                  alignment: Alignment.center,
-                                                                                                  child: Text('График'),
-                                                                                                )),
-                                                                                          ));
-                                                                                    });
-                                                                              },
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]['ip']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Flexible(
-                                                                  child:
-                                                                      RichText(
-                                                                    text:
-                                                                        TextSpan(
-                                                                      text:
-                                                                          "IP-адрес: ",
-                                                                      style: AppTextStyles
-                                                                          .boldTextStyle,
-                                                                      children: <TextSpan>[
-                                                                        TextSpan(
-                                                                          text: information[index]
-                                                                              [
-                                                                              'ip'],
-                                                                          style:
-                                                                              AppTextStyles.additionalText,
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            )
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index][
-                                                                'alert_template']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Шаблон сигнала: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]
-                                                                            [
-                                                                            'alert_template'],
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]
-                                                                ['subalert']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Сигнал: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]
-                                                                            [
-                                                                            'subalert'],
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]['value']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Значение: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]['value'] +
-                                                                            information[index]['units'],
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]
-                                                                ['description']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Описание: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]
-                                                                            [
-                                                                            'description'],
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    information[index]['label']
-                                                            .toString()
-                                                            .isNotEmpty
-                                                        ? Column(children: [
-                                                            const SizedBox(
-                                                              height: 12,
-                                                            ),
-                                                            Row(children: [
-                                                              Flexible(
-                                                                child: RichText(
-                                                                  text:
-                                                                      TextSpan(
-                                                                    text:
-                                                                        "Метка: ",
-                                                                    style: AppTextStyles
-                                                                        .boldTextStyle,
-                                                                    children: <TextSpan>[
-                                                                      TextSpan(
-                                                                        text: information[index]
-                                                                            [
-                                                                            'label'],
-                                                                        style: AppTextStyles
-                                                                            .additionalText,
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ])
-                                                          ])
-                                                        : const SizedBox
-                                                            .shrink(),
-                                                    const SizedBox(
-                                                      height: 12,
-                                                    ),
-                                                    Row(children: [
-                                                      RichText(
-                                                        text: TextSpan(
-                                                          text: "Время: ",
-                                                          style: AppTextStyles
-                                                              .boldTextStyle,
-                                                          children: <TextSpan>[
-                                                            TextSpan(
-                                                              text: CardName()
-                                                                  .getTimeText(
-                                                                information[
-                                                                        index][
-                                                                    'time_value'],
-                                                                selectedTimeRange,
-                                                              ),
-                                                              style: AppTextStyles
-                                                                  .additionalText,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ]),
-                                                    const SizedBox(
-                                                      height: 16,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  IconButton(
-                                                    alignment:
-                                                        Alignment.topCenter,
-                                                    icon:
-                                                        const Icon(Icons.close),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                  ),
-                                                ],
-                                              )
-                                            ],
-                                          ),
+                                          Flexible(
+                                              fit: FlexFit.tight,
+                                              child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 8),
+                                                  child: DashedLine(
+                                                    //height: 700,
+                                                    color: nowColor,
+                                                    dashWidth: 1.0,
+                                                    dashSpace: 1.0,
+                                                  )))
+                                          // DottedVerticalLine()
                                         ],
                                       ),
-                                    ),
+                                      const Column(
+                                        children: [
+                                          SizedBox(
+                                            width: 8,
+                                          )
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              CardName().settingNameToCard(
+                                                  information[index].state),
+                                              style:
+                                                  AppTextStyles.boldTextStyle,
+                                            ),
+                                            !information[index].isExpanded
+                                                ? Column(children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 4),
+                                                      child: Text(
+                                                        information[index]
+                                                            .name
+                                                            .toString(),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: AppTextStyles
+                                                            .rearTextStyle,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 4),
+                                                      child: Text(
+                                                        information[index]
+                                                            .targetName
+                                                            .toString(),
+                                                        maxLines: 3,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: AppTextStyles
+                                                            .underTextStyle,
+                                                      ),
+                                                    )
+                                                  ])
+                                                : ExtendedInformationWidget(
+                                                    information: information,
+                                                    index: index),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                      0, 4, 0, 16),
+                                              child: Align(
+                                                alignment: Alignment.bottomLeft,
+                                                child: Text(
+                                                  CardName().getTimeText(
+                                                    information[index]
+                                                        .timeValue,
+                                                    selectedTimeRange,
+                                                  ),
+                                                  style: AppTextStyles
+                                                      .rearTextStyle,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.topCenter,
+                                        child: IconButton(
+                                          iconSize: 24,
+                                          icon: !information[index].isExpanded
+                                              ? const Icon(Icons.expand_more)
+                                              : const Icon(Icons.expand_less),
+                                          onPressed: () {
+                                            setState(() {
+                                              information[index].isExpanded =
+                                                  !information[index]
+                                                      .isExpanded;
+                                            });
+                                          },
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                );
-                              },
-                            );
-                          }, //onlongpress
+                                ),
+                              ),
+                              onLongPress: () {
+                                showDialog(
+                                    //карточка подробной информации
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Dialog(
+                                          insetPadding:
+                                              const EdgeInsets.all(10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          child: SizedBox(
+                                              width: double.infinity,
+                                              // Установка ширины контейнера равной ширине экрана
+                                              child: SingleChildScrollView(
+                                                  child: Column(children: [
+                                                const SizedBox(
+                                                  height: 6,
+                                                ),
+                                                IntrinsicHeight(
+                                                    child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                      const SizedBox(
+                                                        width: 16,
+                                                      ),
+                                                      Column(
+                                                        children: [
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          Container(
+                                                            height: 16,
+                                                            width: 16,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: nowColor,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8),
+                                                            ),
+                                                          ),
+                                                          Flexible(
+                                                              fit:
+                                                                  FlexFit.tight,
+                                                              child: Padding(
+                                                                  padding: const EdgeInsets
+                                                                          .only(
+                                                                      bottom:
+                                                                          8),
+                                                                  child:
+                                                                      DashedLine(
+                                                                    //height: 700,
+                                                                    color:
+                                                                        nowColor,
+                                                                    dashWidth:
+                                                                        1.0,
+                                                                    dashSpace:
+                                                                        1.0,
+                                                                  )))
+                                                        ],
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 8,
+                                                      ),
+                                                      Expanded(
+                                                        child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const SizedBox(
+                                                                height: 16,
+                                                              ),
+                                                              Text(
+                                                                CardName().settingNameToCard(
+                                                                    information[
+                                                                            index]
+                                                                        .state),
+                                                                style: AppTextStyles
+                                                                    .boldTextStyle,
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 6,
+                                                              ),
+                                                              Row(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: ExtendedInformationWidget(
+                                                                          information:
+                                                                              information,
+                                                                          index:
+                                                                              index),
+                                                                    ),
+                                                                  ]),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                            .fromLTRB(
+                                                                        0,
+                                                                        4,
+                                                                        0,
+                                                                        16),
+                                                                child: Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .bottomLeft,
+                                                                  child: Text(
+                                                                    CardName()
+                                                                        .getTimeText(
+                                                                      information[
+                                                                              index]
+                                                                          .timeValue,
+                                                                      selectedTimeRange,
+                                                                    ),
+                                                                    style: AppTextStyles
+                                                                        .rearTextStyle,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ]),
+                                                      ),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          IconButton(
+                                                            alignment: Alignment
+                                                                .topCenter,
+                                                            icon: const Icon(
+                                                                Icons.close),
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                          ),
+                                                        ],
+                                                      )
+                                                    ]))
+                                              ]))));
+                                    });
+                              } // onlongpress
+                              ),
                         ),
                       ),
                     );
@@ -1937,25 +1108,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _validateInput(String value) {
-    setState(() {
-      if (value.isNotEmpty &&
-          int.tryParse(value) != null &&
-          int.parse(value) > 0 &&
-          int.parse(value) <= countOfPages) {
-        _isValid = true;
-      } else {
-        _isValid = false;
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   void _onSubmitted(String value) {
     // Обработка значения, когда пользователь нажимает клавишу "Готово" на клавиатуре
     // Можно выполнить дополнительную обработку или переход на другую страницу
@@ -1971,6 +1123,33 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
     _readAndParseJsonFile();
+  }
+
+  void _validateInput(String value) {
+    setState(() {
+      if (value.isNotEmpty &&
+          int.tryParse(value) != null &&
+          int.parse(value) > 0 &&
+          int.parse(value) <= countOfPages) {
+        _isValid = true;
+      } else {
+        _isValid = false;
+      }
+    });
+  }
+
+  bool _isValid = true;
+
+  void updateSelectedPage(int newSelectedPage) {
+    setState(() {
+      selectedPage = newSelectedPage;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void _handleSwipe(DragUpdateDetails details) {
@@ -1996,15 +1175,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _readAndParseJsonFile();
       }
     }
-  }
-
-  bool hasTrueValue(Map<Container, FilterData> filter) {
-    for (final filterData in filter.values) {
-      if (filterData.booleanValue == true) {
-        return true;
-      }
-    }
-    return false;
   }
 }
 

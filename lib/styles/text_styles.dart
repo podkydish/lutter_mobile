@@ -42,6 +42,6 @@ class AppTextStyles {
     color: Colors.blue,
     fontWeight: FontWeight.w400,
     fontFamily: 'Roboto',
-    fontSize: 16,
+    fontSize: 14,
   );
 }
