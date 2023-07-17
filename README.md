@@ -10,3 +10,7 @@ A new Flutter single-view project oriented to show information from Json files w
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Branches:
+ - master - additional information only when long pressing on the card
+ - flex-card - additional information both by long pressing on the card, and by the button that opens the card itself
