@@ -14,3 +14,11 @@ samples, guidance on mobile development, and a full API reference.
 ## Branches:
  - master - additional information only when long pressing on the card
  - flex-card - additional information both by long pressing on the card, and by the button that opens the card itself
+
+## Features:
+- ability to filter information by class
+- ability to filter information by event time
+- ability to search for information on the content of the event
+- ability to view brief and detailed information about the event
+- possibility of basic configuration of the application using json
+- paginated output of information
