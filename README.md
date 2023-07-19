@@ -1,16 +1,24 @@
 # untitled
 
-A new Flutter project.
+A new Flutter single-view project oriented to show information from Json files with Json configuration.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Technologies and resources
+- [Flutter](https://docs.flutter.dev/get-started/install) single-view application
+- [Google fonts and icons](https://fonts.google.com/) to comply with the design 
+- [Figma](https://www.figma.com/) for awesome design
 
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Branches:
+ - master - additional information only when long pressing on the card
+ - flex-card - additional information both by long pressing on the card, and by the button that opens the card itself
+
+## Features:
+- ability to filter information by class
+- ability to filter information by event time
+- ability to search for information on the content of the event
+- ability to view brief and detailed information about the event
+- possibility of basic configuration of the application using json
+- paginated output of information
