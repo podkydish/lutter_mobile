@@ -43,7 +43,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].targetName.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
@@ -95,7 +95,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].ip.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(
                         children: [
@@ -120,7 +120,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].alert.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
@@ -143,7 +143,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].subalert.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
@@ -166,7 +166,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].value.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
@@ -189,7 +189,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].description.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
@@ -212,7 +212,7 @@ class ExtendedInformationWidget extends StatelessWidget {
               information[index].label.toString().isNotEmpty
                   ? Column(children: [
                       const SizedBox(
-                        height: 12,
+                        height: 4,
                       ),
                       Row(children: [
                         Flexible(
