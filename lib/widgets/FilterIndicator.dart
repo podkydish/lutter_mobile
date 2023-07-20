@@ -22,41 +22,50 @@ class FilterIndicator extends StatelessWidget {
               .where((entry) => entry.value.booleanValue == true)
               .map(
                 (entry) => Material(
-                  elevation: 4.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      entry.value.booleanValue = false;
-                      readAndParseJson();
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 3, vertical: 4),
-                          width: 24,
-                          height: 24,
-                          child: entry.key,
-                        ),
-                        const SizedBox(width: 4),
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            iconSize: 24,
-                            icon: const Icon(Icons.close),
-                            onPressed: () {
-                              entry.value.booleanValue = false;
-                              readAndParseJson();
-                            },
-                          ),
+                  child: Container(
+                    decoration:BoxDecoration(
+                      color: const Color(0xFFFFFFFF),
+                      borderRadius: BorderRadius.circular(4.0),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1e000000),
+                          offset: Offset(0, 4),
+                          blurRadius: 5,
                         ),
                       ],
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        entry.value.booleanValue = false;
+                        readAndParseJson();
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 3, vertical: 4),
+                            width: 24,
+                            height: 24,
+                            child: entry.key,
+                          ),
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              iconSize: 24,
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                entry.value.booleanValue = false;
+                                readAndParseJson();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

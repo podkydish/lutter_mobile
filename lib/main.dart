@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:untitled/ConfigReader.dart';
 import 'package:untitled/widgets/FilterIndicator.dart';
@@ -578,6 +579,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+            const SizedBox(
+              height: 12,
+            ),
 
             ///блок поиска и фильтра по цветам
             Padding(
@@ -604,13 +608,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           if (searchTimer != null && searchTimer!.isActive) {
                             searchTimer!.cancel();
                           }
-
                           searchTimer =
                               Timer(const Duration(milliseconds: 500), () {
                             setState(() {
                               searchQuery = value;
                             });
-
                             _readAndParseJsonFile();
                           });
                         },
@@ -631,28 +633,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(
                     width: 12,
                   ),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFFFF),
-                      borderRadius: BorderRadius.circular(4.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x1e000000),
-                          offset: Offset(0, 4),
-                          blurRadius: 5,
-                        ),
-                      ],
-                    ),
 
-                    ///меню фильтра(свой класс)
-                    child: NewFilterMenu(
-                        readAndParseJsonCallback: _readAndParseJsonFile,
-                        filter: filter,
-                        popupMenuKey: popupMenuKey,
-                        colorChangingCircle: colorChangingCircle),
-                  ),
+                  ///меню фильтра(свой класс)
+                  NewFilterMenu(
+                      readAndParseJsonCallback: _readAndParseJsonFile,
+                      filter: filter,
+                      popupMenuKey: popupMenuKey,
+                      colorChangingCircle: colorChangingCircle),
+
                   const SizedBox(
                     width: 16,
                   ),
@@ -670,449 +658,322 @@ class _MyHomePageState extends State<MyHomePage> {
 
             ///Построение карточки вывода информации
             Expanded(
-              child: GestureDetector(
-                onHorizontalDragUpdate: _handleSwipe,
-                child: ListView.builder(
-                  itemCount: information.length,
-                  itemBuilder: (context, index) {
-                    int stateIndex = information[index].state;
-                    final Color nowColor =
-                        colorChangingCircle.colors[stateIndex];
-                    return Card(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      margin: const EdgeInsets.all(0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF),
-                          border: Border(
-                            bottom: const BorderSide(color: Color(0xFFE3E3E3)),
-                            left: BorderSide(
-                              color: nowColor,
-                              width: 6,
-                            ),
+              child: ListView.builder(
+                itemCount: information.length,
+                itemBuilder: (context, index) {
+                  log(index.toString());
+                  int stateIndex = information[index].state;
+                  final Color nowColor = colorChangingCircle.colors[stateIndex];
+                  return Card(
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    margin: const EdgeInsets.all(0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFFFF),
+                        border: Border(
+                          bottom: const BorderSide(color: Color(0xFFE3E3E3)),
+                          left: BorderSide(
+                            color: nowColor,
+                            width: 6,
                           ),
                         ),
-                        child: ListTile(
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: IntrinsicHeight(
-                                child: Row(
-                                  children: [
-                                    Column(
-                                      children: [
-                                        Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Container(
-                                            height: 16,
-                                            width: 16,
-                                            decoration: BoxDecoration(
-                                              color: nowColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
+                      ),
+                      child: ListTile(
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                children: [
+                                  Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Container(
+                                          height: 16,
+                                          width: 16,
+                                          decoration: BoxDecoration(
+                                            color: nowColor,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
-                                        Flexible(
-                                            fit: FlexFit.tight,
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 8),
-                                                child: DashedLine(
-                                                  //height: 700,
-                                                  color: nowColor,
-                                                  dashWidth: 1.0,
-                                                  dashSpace: 1.0,
-                                                )))
-                                        // DottedVerticalLine()
-                                      ],
-                                    ),
-                                    const Column(
+                                      ),
+                                      Flexible(
+                                          fit: FlexFit.tight,
+                                          child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8),
+                                              child: DashedLine(
+                                                color: nowColor,
+                                                dashWidth: 1.0,
+                                                dashSpace: 1.0,
+                                              )))
+                                      // DottedVerticalLine()
+                                    ],
+                                  ),
+                                  const Column(
+                                    children: [
+                                      SizedBox(
+                                        width: 8,
+                                      )
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(
-                                          width: 8,
-                                        )
-                                      ],
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            CardName().settingNameToCard(
-                                                information[index].state),
-                                            style: AppTextStyles.boldTextStyle,
-                                          ),
-                                          !information[index].isExpanded
-                                              ? Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(top: 8),
-                                                        child: Align(
-                                                          alignment: Alignment
-                                                              .centerLeft,
-                                                          child: Text(
-                                                            information[index]
-                                                                .name
-                                                                .toString(),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            style: AppTextStyles
-                                                                .rearTextStyle,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(top: 4),
+                                        Text(
+                                          CardName().settingNameToCard(
+                                              information[index].state),
+                                          style: AppTextStyles.boldTextStyle,
+                                        ),
+                                        !information[index].isExpanded
+                                            ? Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8),
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
                                                         child: Text(
                                                           information[index]
-                                                              .targetName
+                                                              .name
                                                               .toString(),
-                                                          maxLines: 3,
+                                                          maxLines: 1,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: AppTextStyles
-                                                              .underTextStyle,
+                                                              .rearTextStyle,
                                                         ),
-                                                      )
-                                                    ])
-                                              : ExtendedInformationWidget(
-                                                  information: information,
-                                                  index: index),
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                0, 12, 0, 16),
-                                            child: Align(
-                                              alignment: Alignment.bottomLeft,
-                                              child: Text(
-                                                CardName().getTimeText(
-                                                  information[index].timeValue,
-                                                  selectedTimeRange,
-                                                ),
-                                                style:
-                                                    AppTextStyles.rearTextStyle,
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 4),
+                                                      child: Text(
+                                                        information[index]
+                                                            .targetName
+                                                            .toString(),
+                                                        maxLines: 3,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: AppTextStyles
+                                                            .underTextStyle,
+                                                      ),
+                                                    )
+                                                  ])
+                                            : ExtendedInformationWidget(
+                                                information: information,
+                                                index: index),
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              0, 12, 0, 16),
+                                          child: Align(
+                                            alignment: Alignment.bottomLeft,
+                                            child: Text(
+                                              CardName().getTimeText(
+                                                information[index].timeValue,
+                                                selectedTimeRange,
                                               ),
+                                              style:
+                                                  AppTextStyles.rearTextStyle,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Expanded(child: Container()),
-                                        Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 16),
-                                                child: SizedBox(
-                                                  width: 24,
-                                                  height: 24,
-                                                  child: IconButton(
-                                                    padding: EdgeInsets.zero,
-                                                    iconSize: 24,
-                                                    icon: !information[index]
-                                                            .isExpanded
-                                                        ? const Icon(
-                                                            Icons.expand_more)
-                                                        : const Icon(
-                                                            Icons.expand_less),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        information[index]
-                                                                .isExpanded =
-                                                            !information[index]
-                                                                .isExpanded;
-                                                      });
-                                                    },
-                                                  ),
-                                                ))),
+                                        ),
                                       ],
-                                    )
-                                  ],
-                                ),
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      Expanded(child: Container()),
+                                      Align(
+                                          alignment: Alignment.bottomRight,
+                                          child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 16),
+                                              child: SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child: IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  iconSize: 24,
+                                                  icon: !information[index]
+                                                          .isExpanded
+                                                      ? const Icon(
+                                                          Icons.expand_more)
+                                                      : const Icon(
+                                                          Icons.expand_less),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      information[index]
+                                                              .isExpanded =
+                                                          !information[index]
+                                                              .isExpanded;
+                                                    });
+                                                  },
+                                                ),
+                                              ))),
+                                    ],
+                                  )
+                                ],
                               ),
                             ),
-                            onLongPress: () {
-                              showDialog(
-                                  //карточка подробной информации
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return Dialog(
-                                        insetPadding: const EdgeInsets.all(10),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                        ),
-                                        child: SizedBox(
-                                            width: double.infinity,
-                                            // Установка ширины контейнера равной ширине экрана
-                                            child: SingleChildScrollView(
-                                                child: Column(children: [
-                                              const SizedBox(
-                                                height: 6,
-                                              ),
-                                              IntrinsicHeight(
-                                                  child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                    const SizedBox(
-                                                      width: 16,
-                                                    ),
-                                                    Column(
-                                                      children: [
-                                                        const SizedBox(
-                                                          height: 16,
+                          ),
+                          onLongPress: () {
+                            showDialog(
+                                //карточка подробной информации
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                      insetPadding: const EdgeInsets.all(10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                      child: SizedBox(
+                                          width: double.infinity,
+                                          // Установка ширины контейнера равной ширине экрана
+                                          child: SingleChildScrollView(
+                                              child: Column(children: [
+                                            const SizedBox(
+                                              height: 6,
+                                            ),
+                                            IntrinsicHeight(
+                                                child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                  const SizedBox(
+                                                    width: 16,
+                                                  ),
+                                                  Column(
+                                                    children: [
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
+                                                      Container(
+                                                        height: 16,
+                                                        width: 16,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: nowColor,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
                                                         ),
-                                                        Container(
-                                                          height: 16,
-                                                          width: 16,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: nowColor,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                          ),
-                                                        ),
-                                                        Flexible(
-                                                            fit: FlexFit.tight,
-                                                            child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        bottom:
-                                                                            8),
-                                                                child:
-                                                                    DashedLine(
-                                                                  //height: 700,
-                                                                  color:
-                                                                      nowColor,
-                                                                  dashWidth:
-                                                                      1.0,
-                                                                  dashSpace:
-                                                                      1.0,
-                                                                )))
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 8,
-                                                    ),
-                                                    Expanded(
-                                                      child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            const SizedBox(
-                                                              height: 16,
-                                                            ),
-                                                            Text(
-                                                              CardName().settingNameToCard(
-                                                                  information[
-                                                                          index]
-                                                                      .state),
-                                                              style: AppTextStyles
-                                                                  .boldTextStyle,
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 6,
-                                                            ),
-                                                            Row(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Expanded(
-                                                                    child: ExtendedInformationWidget(
-                                                                        information:
-                                                                            information,
-                                                                        index:
-                                                                            index),
-                                                                  ),
-                                                                ]),
-                                                            Padding(
+                                                      ),
+                                                      Flexible(
+                                                          fit: FlexFit.tight,
+                                                          child: Padding(
                                                               padding:
                                                                   const EdgeInsets
-                                                                          .fromLTRB(
-                                                                      0,
-                                                                      12,
-                                                                      0,
-                                                                      16),
-                                                              child: Align(
-                                                                alignment: Alignment
-                                                                    .bottomLeft,
-                                                                child: Text(
-                                                                  CardName()
-                                                                      .getTimeText(
+                                                                          .only(
+                                                                      bottom:
+                                                                          8),
+                                                              child: DashedLine(
+                                                                //height: 700,
+                                                                color: nowColor,
+                                                                dashWidth: 1.0,
+                                                                dashSpace: 1.0,
+                                                              )))
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 8,
+                                                  ),
+                                                  Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
+                                                          Text(
+                                                            CardName()
+                                                                .settingNameToCard(
                                                                     information[
                                                                             index]
-                                                                        .timeValue,
-                                                                    selectedTimeRange,
-                                                                  ),
-                                                                  style: AppTextStyles
-                                                                      .rearTextStyle,
+                                                                        .state),
+                                                            style: AppTextStyles
+                                                                .boldTextStyle,
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 6,
+                                                          ),
+                                                          Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Expanded(
+                                                                  child: ExtendedInformationWidget(
+                                                                      information:
+                                                                          information,
+                                                                      index:
+                                                                          index),
                                                                 ),
+                                                              ]),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .fromLTRB(
+                                                                    0,
+                                                                    12,
+                                                                    0,
+                                                                    16),
+                                                            child: Align(
+                                                              alignment: Alignment
+                                                                  .bottomLeft,
+                                                              child: Text(
+                                                                CardName()
+                                                                    .getTimeText(
+                                                                  information[
+                                                                          index]
+                                                                      .timeValue,
+                                                                  selectedTimeRange,
+                                                                ),
+                                                                style: AppTextStyles
+                                                                    .rearTextStyle,
                                                               ),
                                                             ),
-                                                          ]),
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        IconButton(
-                                                          alignment: Alignment
-                                                              .topCenter,
-                                                          icon: const Icon(
-                                                              Icons.close),
-                                                          onPressed: () {
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                          },
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ]))
-                                            ]))));
-                                  });
-                            } // onlongpress
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            ///Поле навигации
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Row(
-                mainAxisSize: MainAxisSize.max, // занимаем всю ширину экрана
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() {
-                        selectedPage = 1;
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.keyboard_double_arrow_left),
-                    iconSize: 40,
-                  ),
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() {
-                        if (selectedPage != 1) {
-                          selectedPage -= 1;
-                        }
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.chevron_left),
-                    iconSize: 40,
-                  ),
-                  const Text(
-                    'Страница:',
-                    style: AppTextStyles.boldTextStyle,
-                  ),
-                  Container(
-                    // Используем SizedBox для установки ширины TextField
-                    width: 20,
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: TextField(
-                      minLines: 1,
-                      // Устанавливаем минимальное количество строк
-                      maxLines: 1,
-                      controller: _controller,
-                      onChanged: _validateInput,
-                      onSubmitted: _onSubmitted,
-                      style: AppTextStyles.boldTextStyle,
-                      keyboardType: TextInputType.number,
-                      textAlignVertical: TextAlignVertical.top,
-                      decoration: InputDecoration(
-                        focusedErrorBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: _isValid
-                              ? const BorderSide(color: Colors.grey)
-                              : const BorderSide(color: Colors.red),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: _isValid
-                              ? const BorderSide(color: Colors.blue)
-                              : const BorderSide(color: Colors.red),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 5), // Установка вертикального padding
-                      ),
+                                                          ),
+                                                        ]),
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      IconButton(
+                                                        alignment:
+                                                            Alignment.topCenter,
+                                                        icon: const Icon(
+                                                            Icons.close),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  )
+                                                ]))
+                                          ]))));
+                                });
+                          } // onlongpress
+                          ),
                     ),
-                  ),
-                  const Text(
-                    ' из ',
-                    style: AppTextStyles.boldTextStyle,
-                  ),
-                  Text(
-                    countOfPages.toString(),
-                    style: AppTextStyles.boldTextStyle,
-                  ),
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() {
-                        if (selectedPage != countOfPages) {
-                          selectedPage += 1;
-                        }
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.chevron_right),
-                    iconSize: 40,
-                  ),
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() {
-                        selectedPage = countOfPages;
-                      });
-                      _readAndParseJsonFile();
-                      _controller.text = selectedPage.toString();
-                    },
-                    icon: const Icon(Icons.keyboard_double_arrow_right),
-                    iconSize: 40,
-                  ),
-                  Text('${configReader.recordsOnPage}/30000'),
-                  /*const SizedBox(
-                      width: 16,
-                    )*/
-                ],
+                  );
+                },
               ),
             ),
           ],
@@ -1138,73 +999,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _onSubmitted(String value) {
-    // Обработка значения, когда пользователь нажимает клавишу "Готово" на клавиатуре
-    // Можно выполнить дополнительную обработку или переход на другую страницу
-    setState(() {
-      if (value.isNotEmpty &&
-          int.tryParse(value) != null &&
-          int.parse(value) >= 0 &&
-          int.parse(value) <= countOfPages) {
-        selectedPage = int.parse(value);
-      } else {
-        _controller.text =
-            selectedPage.toString(); // Восстановление предыдущего значения
-      }
-    });
-    _readAndParseJsonFile();
-  }
-
-  void _validateInput(String value) {
-    setState(() {
-      if (value.isNotEmpty &&
-          int.tryParse(value) != null &&
-          int.parse(value) > 0 &&
-          int.parse(value) <= countOfPages) {
-        _isValid = true;
-      } else {
-        _isValid = false;
-      }
-    });
-  }
-
-  bool _isValid = true;
-
-  void updateSelectedPage(int newSelectedPage) {
-    setState(() {
-      selectedPage = newSelectedPage;
-    });
-  }
-
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  void _handleSwipe(DragUpdateDetails details) {
-    // Определение направления свайпа и изменение страницы в зависимости от направления
-    if (details.primaryDelta != null) {
-      if (details.primaryDelta! > 0) {
-        // Свайп вправо
-        setState(() {
-          if (selectedPage != 1) {
-            selectedPage--;
-            _controller.text = selectedPage.toString();
-          }
-        });
-        _readAndParseJsonFile();
-      } else if (details.primaryDelta! < 0) {
-        // Свайп влево
-        setState(() {
-          if (selectedPage != countOfPages) {
-            selectedPage++;
-            _controller.text = selectedPage.toString();
-          }
-        });
-        _readAndParseJsonFile();
-      }
-    }
   }
 }
 
