@@ -12,8 +12,8 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 ## Branches:
- - master - additional information only when long pressing on the card
- - flex-card - additional information both by long pressing on the card, and by the button that opens the card itself
+ - master - additional information only when long pressing on the card (last version - 14.07.2023)
+ - flex-card - additional information both by long pressing on the card, and by the button that opens the card itself (last version - 20.07.2023)
 
 ## Features:
 - ability to filter information by class
