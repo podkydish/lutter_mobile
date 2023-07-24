@@ -66,7 +66,7 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                 color: const Color(0xFFF0F1F2),
                 borderRadius: BorderRadius.circular(4.0),
               ),
-        child: PopupMenuButton<String>(
+        child:PopupMenuButton<String>(
           position: PopupMenuPosition.under,
           onCanceled: () {
             widget.readAndParseJsonCallback();
@@ -81,26 +81,29 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
             });
             widget.popupMenuKey.currentState?.setState(() {});
           },
-          constraints:
-              const BoxConstraints.expand(width: double.infinity, height: 700),
+          // Используйте BoxConstraints.expand с шириной экрана, полученной из MediaQuery
+          constraints: BoxConstraints.expand(
+            width: MediaQuery.of(context).size.width,
+            height: 700,
+          ),
           padding: EdgeInsets.zero,
           key: widget.popupMenuKey,
           icon: hasTrueValue(widget.filter)
               ? SvgPicture.asset(
-                  'assets/filter_add.svg',
-                  width: 24,
-                  height: 24,
-                )
+            'assets/filter_add.svg',
+            width: 24,
+            height: 24,
+          )
               : const Icon(
-                  Icons.filter_alt,
-                  color: Color(0xFF93959A),
-                ),
+            Icons.filter_alt,
+            color: Color(0xFF93959A),
+          ),
           itemBuilder: (BuildContext context) {
             return [
               PopUpMenuChecks<String>(
                 child: StatefulBuilder(
                     builder: (BuildContext context, StateSetter setState) {
-                  return  Column(children: [
+                  return Column(children: [
                     Column(
                       children: [
                         Padding(
@@ -202,6 +205,265 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                       color: widget
                                                               .colorChangingCircle
                                                               .colors[
+                                                          greyFilterIndex],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    width: 16,
+                                                    height: 16,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 4),
+                                                    child: Text(
+                                                      CardName()
+                                                          .settingNameToCard(
+                                                              greyFilterIndex),
+                                                      style: AppTextStyles
+                                                          .boldTextStyle,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              value: widget.filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      greyFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  widget.filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          greyFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                                widget.popupMenuKey.currentState
+                                                    ?.setState(() {});
+                                              },
+                                            ),
+                                            CheckboxListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              title: Row(
+                                                children: [
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: widget
+                                                          .colorChangingCircle
+                                                          .colors[skyFilterIndex],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    width: 16,
+                                                    height: 16,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 4),
+                                                    child: Text(
+                                                      CardName()
+                                                          .settingNameToCard(
+                                                              skyFilterIndex),
+                                                      style: AppTextStyles
+                                                          .boldTextStyle,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              value: widget.filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      skyFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  widget.filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                              skyFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                                widget.popupMenuKey.currentState
+                                                    ?.setState(() {});
+                                              },
+                                            ),
+                                            CheckboxListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              title: Row(
+                                                children: [
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: widget
+                                                              .colorChangingCircle
+                                                              .colors[
+                                                          greenFilterIndex],
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              4),
+                                                    ),
+                                                    width: 16,
+                                                    height: 16,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 4),
+                                                    child: Text(
+                                                      CardName()
+                                                          .settingNameToCard(
+                                                              greenFilterIndex),
+                                                      style: AppTextStyles
+                                                          .boldTextStyle,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              value: widget.filter.values
+                                                  .firstWhere((filterData) =>
+                                                      filterData.intValue ==
+                                                      greenFilterIndex)
+                                                  .booleanValue,
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  widget.filter.values
+                                                      .where((filterData) =>
+                                                          filterData.intValue ==
+                                                          greenFilterIndex)
+                                                      .forEach((filterData) {
+                                                    filterData.booleanValue =
+                                                        value!;
+                                                  });
+                                                });
+                                                widget.popupMenuKey.currentState
+                                                    ?.setState(() {});
+                                              },
+                                            ),
+                                            CheckboxListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Row(
+                                                  children: [
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color: widget
+                                                                .colorChangingCircle
+                                                                .colors[
+                                                            yellowFilterIndex],
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4),
+                                                      ),
+                                                      width: 16,
+                                                      height: 16,
+                                                    ),
+                                                    Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 4),
+                                                        child: Text(
+                                                          CardName()
+                                                              .settingNameToCard(
+                                                                  yellowFilterIndex),
+                                                          style: AppTextStyles
+                                                              .boldTextStyle,
+                                                        ))
+                                                  ],
+                                                ),
+                                                value: widget.filter.values
+                                                    .firstWhere((filterData) =>
+                                                        filterData.intValue ==
+                                                        yellowFilterIndex)
+                                                    .booleanValue,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    widget.filter.values
+                                                        .where((filterData) =>
+                                                            filterData
+                                                                .intValue ==
+                                                            yellowFilterIndex)
+                                                        .forEach((filterData) {
+                                                      filterData.booleanValue =
+                                                          value!;
+                                                    });
+                                                  });
+                                                  widget
+                                                      .popupMenuKey.currentState
+                                                      ?.setState(() {});
+                                                }),
+                                            CheckboxListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Row(
+                                                  children: [
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color: widget
+                                                            .colorChangingCircle
+                                                            .colors[redFilterIndex],
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4),
+                                                      ),
+                                                      width: 16,
+                                                      height: 16,
+                                                    ),
+                                                    Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 4),
+                                                        child: Text(
+                                                          CardName()
+                                                              .settingNameToCard(
+                                                                  redFilterIndex),
+                                                          style: AppTextStyles
+                                                              .boldTextStyle,
+                                                        ))
+                                                  ],
+                                                ),
+                                                value: widget.filter.values
+                                                    .firstWhere((filterData) =>
+                                                        filterData.intValue ==
+                                                        redFilterIndex)
+                                                    .booleanValue,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    widget.filter.values
+                                                        .where((filterData) =>
+                                                            filterData
+                                                                .intValue ==
+                                                            redFilterIndex)
+                                                        .forEach((filterData) {
+                                                      filterData.booleanValue =
+                                                          value!;
+                                                    });
+                                                  });
+                                                  widget
+                                                      .popupMenuKey.currentState
+                                                      ?.setState(() {});
+                                                }),
+                                            CheckboxListTile(
+                                              contentPadding: EdgeInsets.zero,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              title: Row(
+                                                children: [
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      color: widget
+                                                              .colorChangingCircle
+                                                              .colors[
                                                           purpleFilterIndex],
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -259,56 +521,6 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                       ),
                                                       width: 16,
                                                       height: 16,
-                                                    ),
-                                                    Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 4),
-                                                        child: Text(
-                                                          CardName()
-                                                              .settingNameToCard(
-                                                                  redFilterIndex),
-                                                          style: AppTextStyles
-                                                              .boldTextStyle,
-                                                        ))
-                                                  ],
-                                                ),
-                                                value: widget.filter.values
-                                                    .firstWhere((filterData) =>
-                                                        filterData.intValue ==
-                                                        redFilterIndex)
-                                                    .booleanValue,
-                                                onChanged: (bool? value) {
-                                                  setState(() {
-                                                    widget.filter.values
-                                                        .where((filterData) =>
-                                                            filterData
-                                                                .intValue ==
-                                                            redFilterIndex)
-                                                        .forEach((filterData) {
-                                                      filterData.booleanValue =
-                                                          value!;
-                                                    });
-                                                  });
-                                                  widget
-                                                      .popupMenuKey.currentState
-                                                      ?.setState(() {});
-                                                }),
-                                            CheckboxListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Row(
-                                                  children: [
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                        color: widget
-                                                            .colorChangingCircle
-                                                            .colors[redFilterIndex],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                      ),
-                                                      width: 16,
-                                                      height: 16,
                                                       child: const Icon(
                                                         Icons.build,
                                                         color: Colors.white,
@@ -338,57 +550,6 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                             filterData
                                                                 .intValue ==
                                                             redFilterIndex)
-                                                        .forEach((filterData) {
-                                                      filterData.booleanValue =
-                                                          value!;
-                                                    });
-                                                  });
-                                                  widget
-                                                      .popupMenuKey.currentState
-                                                      ?.setState(() {});
-                                                }),
-                                            CheckboxListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Row(
-                                                  children: [
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                        color: widget
-                                                                .colorChangingCircle
-                                                                .colors[
-                                                            yellowFilterIndex],
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                      ),
-                                                      width: 16,
-                                                      height: 16,
-                                                    ),
-                                                    Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 4),
-                                                        child: Text(
-                                                          CardName()
-                                                              .settingNameToCard(
-                                                                  yellowFilterIndex),
-                                                          style: AppTextStyles
-                                                              .boldTextStyle,
-                                                        ))
-                                                  ],
-                                                ),
-                                                value: widget.filter.values
-                                                    .firstWhere((filterData) =>
-                                                        filterData.intValue ==
-                                                        yellowFilterIndex)
-                                                    .booleanValue,
-                                                onChanged: (bool? value) {
-                                                  setState(() {
-                                                    widget.filter.values
-                                                        .where((filterData) =>
-                                                            filterData
-                                                                .intValue ==
-                                                            yellowFilterIndex)
                                                         .forEach((filterData) {
                                                       filterData.booleanValue =
                                                           value!;
@@ -560,6 +721,9 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                           ],
                                         )
                                       : const SizedBox.shrink(),
+                                  const SizedBox(
+                                    height: 25,
+                                  ),
                                   GestureDetector(
                                     onTap: () {
                                       setState(() {
@@ -615,38 +779,40 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                   style: AppTextStyles
                                                       .boldTextStyle,
                                                 ),
-                                                Checkbox(
-                                                  value: widget.filter.values
-                                                      .firstWhere(
-                                                          (filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c1FilterIndex)
-                                                      .booleanValue,
-                                                  onChanged: (bool? value) {
-                                                    setState(() {
-                                                      widget.filter.values
-                                                          .where((filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c1FilterIndex)
-                                                          .forEach(
-                                                              (filterData) {
-                                                        filterData
-                                                                .booleanValue =
-                                                            value!;
-                                                      });
-                                                    });
-                                                    widget.popupMenuKey
-                                                        .currentState
-                                                        ?.setState(() {});
-                                                  },
-                                                )
+                                                SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Checkbox(
+                                                      value: widget
+                                                          .filter.values
+                                                          .firstWhere(
+                                                              (filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c1FilterIndex)
+                                                          .booleanValue,
+                                                      onChanged: (bool? value) {
+                                                        setState(() {
+                                                          widget.filter.values
+                                                              .where((filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c1FilterIndex)
+                                                              .forEach(
+                                                                  (filterData) {
+                                                            filterData
+                                                                    .booleanValue =
+                                                                value!;
+                                                          });
+                                                        });
+                                                        widget.popupMenuKey
+                                                            .currentState
+                                                            ?.setState(() {});
+                                                      },
+                                                    ))
                                               ],
                                             ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
+                                            const Spacer(),
                                             Row(
                                               children: [
                                                 const Text(
@@ -654,38 +820,40 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                   style: AppTextStyles
                                                       .boldTextStyle,
                                                 ),
-                                                Checkbox(
-                                                  value: widget.filter.values
-                                                      .firstWhere(
-                                                          (filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c2FilterIndex)
-                                                      .booleanValue,
-                                                  onChanged: (bool? value) {
-                                                    setState(() {
-                                                      widget.filter.values
-                                                          .where((filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c2FilterIndex)
-                                                          .forEach(
-                                                              (filterData) {
-                                                        filterData
-                                                                .booleanValue =
-                                                            value!;
-                                                      });
-                                                    });
-                                                    widget.popupMenuKey
-                                                        .currentState
-                                                        ?.setState(() {});
-                                                  },
-                                                )
+                                                SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Checkbox(
+                                                      value: widget
+                                                          .filter.values
+                                                          .firstWhere(
+                                                              (filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c2FilterIndex)
+                                                          .booleanValue,
+                                                      onChanged: (bool? value) {
+                                                        setState(() {
+                                                          widget.filter.values
+                                                              .where((filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c2FilterIndex)
+                                                              .forEach(
+                                                                  (filterData) {
+                                                            filterData
+                                                                    .booleanValue =
+                                                                value!;
+                                                          });
+                                                        });
+                                                        widget.popupMenuKey
+                                                            .currentState
+                                                            ?.setState(() {});
+                                                      },
+                                                    ))
                                               ],
                                             ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
+                                            const Spacer(),
                                             Row(
                                               children: [
                                                 const Text(
@@ -693,38 +861,40 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                   style: AppTextStyles
                                                       .boldTextStyle,
                                                 ),
-                                                Checkbox(
-                                                  value: widget.filter.values
-                                                      .firstWhere(
-                                                          (filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c3FilterIndex)
-                                                      .booleanValue,
-                                                  onChanged: (bool? value) {
-                                                    setState(() {
-                                                      widget.filter.values
-                                                          .where((filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c3FilterIndex)
-                                                          .forEach(
-                                                              (filterData) {
-                                                        filterData
-                                                                .booleanValue =
-                                                            value!;
-                                                      });
-                                                    });
-                                                    widget.popupMenuKey
-                                                        .currentState
-                                                        ?.setState(() {});
-                                                  },
-                                                )
+                                                SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Checkbox(
+                                                      value: widget
+                                                          .filter.values
+                                                          .firstWhere(
+                                                              (filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c3FilterIndex)
+                                                          .booleanValue,
+                                                      onChanged: (bool? value) {
+                                                        setState(() {
+                                                          widget.filter.values
+                                                              .where((filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c3FilterIndex)
+                                                              .forEach(
+                                                                  (filterData) {
+                                                            filterData
+                                                                    .booleanValue =
+                                                                value!;
+                                                          });
+                                                        });
+                                                        widget.popupMenuKey
+                                                            .currentState
+                                                            ?.setState(() {});
+                                                      },
+                                                    ))
                                               ],
                                             ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
+                                            const Spacer(),
                                             Row(
                                               children: [
                                                 const Text(
@@ -732,33 +902,37 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                                                   style: AppTextStyles
                                                       .boldTextStyle,
                                                 ),
-                                                Checkbox(
-                                                  value: widget.filter.values
-                                                      .firstWhere(
-                                                          (filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c4FilterIndex)
-                                                      .booleanValue,
-                                                  onChanged: (bool? value) {
-                                                    setState(() {
-                                                      widget.filter.values
-                                                          .where((filterData) =>
-                                                              filterData
-                                                                  .intValue ==
-                                                              c4FilterIndex)
-                                                          .forEach(
-                                                              (filterData) {
-                                                        filterData
-                                                                .booleanValue =
-                                                            value!;
-                                                      });
-                                                    });
-                                                    widget.popupMenuKey
-                                                        .currentState
-                                                        ?.setState(() {});
-                                                  },
-                                                )
+                                                SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Checkbox(
+                                                      value: widget
+                                                          .filter.values
+                                                          .firstWhere(
+                                                              (filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c4FilterIndex)
+                                                          .booleanValue,
+                                                      onChanged: (bool? value) {
+                                                        setState(() {
+                                                          widget.filter.values
+                                                              .where((filterData) =>
+                                                                  filterData
+                                                                      .intValue ==
+                                                                  c4FilterIndex)
+                                                              .forEach(
+                                                                  (filterData) {
+                                                            filterData
+                                                                    .booleanValue =
+                                                                value!;
+                                                          });
+                                                        });
+                                                        widget.popupMenuKey
+                                                            .currentState
+                                                            ?.setState(() {});
+                                                      },
+                                                    ))
                                               ],
                                             ),
                                           ],
@@ -771,10 +945,10 @@ class _FilterPopupMenuState extends State<NewFilterMenu> {
                         ),
                       ],
                     ),
-                    isClassExpanded && !isSignalExpanded?SizedBox(height: 484,):SizedBox.shrink(),
-                    isClassExpanded && isSignalExpanded?SizedBox(height: 100,):SizedBox.shrink(),
-                    isSignalExpanded && !isClassExpanded?SizedBox(height: 148,):SizedBox.shrink(),
-                    !isClassExpanded && !isSignalExpanded?SizedBox(height: 522,):SizedBox.shrink(),
+                    isClassExpanded && !isSignalExpanded ? const SizedBox(height: 467,) : SizedBox.shrink(),
+                    !isClassExpanded && !isSignalExpanded ? const SizedBox(height: 505,) : SizedBox.shrink(),
+                    isClassExpanded && !isSignalExpanded ? const SizedBox(height: 12,) : SizedBox.shrink(),
+                    isClassExpanded && isSignalExpanded ? const SizedBox(height: 12,) : SizedBox.shrink(),
                     SizedBox(
                       width: double.infinity,
                       height: 40,

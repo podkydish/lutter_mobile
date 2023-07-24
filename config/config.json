@@ -1,5 +1,5 @@
 {
   "config": {
-    "rec_on_page": 10
+    "rec_on_page": 1000
   }
 }

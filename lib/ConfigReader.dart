@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 
 class ConfigReader {
-  int recordsOnPage = 10;
+  int recordsOnPage = 1000;
 
   Future<void> readAndParseConfig() async {
     try {

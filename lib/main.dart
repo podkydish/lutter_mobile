@@ -16,7 +16,7 @@ import 'widgets/DashedLine.dart';
 import 'widgets/ExtendedInformationWidget.dart';
 import 'FilterData.dart';
 
-enum TimeRange { hour, today, yesterday, week, month, year }
+enum TimeRange { hour, today, yesterday, week, month }
 
 void main() {
   //debugPaintSizeEnabled = true; // режим отладки стилей
@@ -277,15 +277,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     int.parse(info['time_value']) * 1000,
                   ).isAfter(lastMonth))
               .toList();
-        } else if (selectedTimeRange == TimeRange.year) {
-          DateTime now = DateTime.now().toLocal();
-          DateTime lastYear = now.subtract(const Duration(days: 365));
-
-          filteredInformation = allInformation
-              .where((info) => DateTime.fromMillisecondsSinceEpoch(
-                    int.parse(info['time_value']) * 1000,
-                  ).isAfter(lastYear))
-              .toList();
         }
         if (filteredInformation.isNotEmpty) {
           for (int i = 0; i < filteredInformation.length; i++) {
@@ -545,33 +536,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                   : 0.0,
                               textStyle: AppTextStyles.defaultTextStyle),
                           child: const Text('Месяц'),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 100,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              selectedPage = 1;
-                              selectedTimeRange = TimeRange.year;
-                              _controller.text = selectedPage.toString();
-                              _readAndParseJsonFile();
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                              foregroundColor:
-                                  selectedTimeRange == TimeRange.year
-                                      ? const Color(0xFFF0F1F2)
-                                      : const Color(0xFF93959A),
-                              backgroundColor:
-                                  selectedTimeRange == TimeRange.year
-                                      ? const Color(0xFF93959A)
-                                      : const Color(0xFFF0F1F2),
-                              elevation: selectedTimeRange == TimeRange.year
-                                  ? 2.0
-                                  : 0.0,
-                              textStyle: AppTextStyles.defaultTextStyle),
-                          child: const Text('Год'),
                         ),
                       ),
                     ],

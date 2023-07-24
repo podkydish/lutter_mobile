@@ -20,7 +20,7 @@ class CardName {
       case 5:
         return 'Нет данных';
       case 6:
-        return '';
+        return 'Мало данных';
       case 7:
         return 'Резерв';
       default:
@@ -49,8 +49,7 @@ class CardName {
       return formattedTime;
     } else if (selectedTimeRange == TimeRange.yesterday ||
         selectedTimeRange == TimeRange.week ||
-        selectedTimeRange == TimeRange.month ||
-        selectedTimeRange == TimeRange.year) {
+        selectedTimeRange == TimeRange.month) {
       final DateTime eventTime =
           DateTime.fromMillisecondsSinceEpoch(int.parse(timeValue) * 1000)
               .toUtc();
